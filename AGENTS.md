@@ -17,26 +17,26 @@
 
 ## 현재 진행 단계
 - Phase 1 - Foundation: 완료
-- Phase 2 - Payments: 진행 중 (PortOne 연동 구현)
+- Phase 2 - Payments: 진행 중 (Render 배포 + PortOne 웹훅 등록 대기)
 
 ## 단계별 체크리스트
 
 ### Phase 1 - Foundation (현재)
-- [ ] Supabase 프로젝트 생성
-- [ ] `supabase/schema.sql` 적용
-- [ ] 단일상품 1건 시드 데이터 등록
-- [ ] 서버 `.env` 구성 (SUPABASE, PortOne)
-- [ ] API 기본 엔드포인트 점검
+- [x] Supabase 프로젝트 생성
+- [x] `supabase/schema.sql` 적용
+- [x] 단일상품 1건 시드 데이터 등록
+- [x] 서버 `.env` 구성 (SUPABASE, PortOne)
+- [x] API 기본 엔드포인트 점검
 
 ### Phase 2 - Payments
-- [ ] PortOne 결제 준비/승인 API 구현
-- [ ] 결제 웹훅 검증 + 주문 상태 업데이트
-- [ ] 결제 실패/취소 처리
+- [x] PortOne 결제 준비/승인 API 구현
+- [x] 결제 웹훅 검증 + 주문 상태 업데이트
+- [x] 결제 실패/취소 처리
 - [ ] 백엔드 배포(Render) 후 웹훅 URL 등록
 
 ### Phase 3 - Frontend
-- [ ] 상품 상세 → 주문 → 결제 진입
-- [ ] 견적 문의 폼 연동
+- [x] 상품 상세 → 주문 → 결제 진입
+- [x] 견적 문의 폼 연동
 - [ ] 회원/비회원 주문 조회
 
 ### Phase 4 - Ops

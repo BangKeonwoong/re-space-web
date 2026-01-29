@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
     return (
@@ -23,17 +24,17 @@ const Footer = () => {
                         <div>
                             <h4 className="font-bold mb-4 font-heading text-lg">쇼핑</h4>
                             <ul className="space-y-3 text-gray-500">
-                                <li><a href="#" className="hover:text-black hover:underline transition-all">신상품</a></li>
-                                <li><a href="#" className="hover:text-black hover:underline transition-all">리퍼브</a></li>
-                                <li><a href="#" className="hover:text-black hover:underline transition-all">브랜드</a></li>
+                                <li><Link to="/new-arrivals" className="hover:text-black hover:underline transition-all">신상품</Link></li>
+                                <li><Link to="/premium-refurb" className="hover:text-black hover:underline transition-all">리퍼브</Link></li>
+                                <li><Link to="/brands" className="hover:text-black hover:underline transition-all">브랜드</Link></li>
                             </ul>
                         </div>
                         <div>
                             <h4 className="font-bold mb-4 font-heading text-lg">판매</h4>
                             <ul className="space-y-3 text-gray-500">
-                                <li><a href="#" className="hover:text-black hover:underline transition-all">견적 받기</a></li>
-                                <li><a href="#" className="hover:text-black hover:underline transition-all">기업 구매</a></li>
-                                <li><a href="#" className="hover:text-black hover:underline transition-all">위탁 판매</a></li>
+                                <li><Link to="/quote" className="hover:text-black hover:underline transition-all">견적 받기</Link></li>
+                                <li><Link to="/checkout" className="hover:text-black hover:underline transition-all">기업 구매</Link></li>
+                                <li><Link to="/sell" className="hover:text-black hover:underline transition-all">위탁 판매</Link></li>
                             </ul>
                         </div>
                         <div>

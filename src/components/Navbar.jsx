@@ -33,6 +33,7 @@ const Navbar = () => {
                     {[
                         { name: '신상품', path: '/new-arrivals' },
                         { name: '프리미엄 리퍼브', path: '/premium-refurb' },
+                        { name: '구매하기', path: '/checkout' },
                         { name: '판매하기', path: '/sell' },
                         { name: '브랜드', path: '/brands' }
                     ].map((item) => (
@@ -51,10 +52,10 @@ const Navbar = () => {
                     <button className="p-2 hover:bg-black/5 rounded-full transition-colors">
                         <Search size={20} />
                     </button>
-                    <button className="p-2 hover:bg-black/5 rounded-full transition-colors relative">
+                    <Link to="/checkout" className="p-2 hover:bg-black/5 rounded-full transition-colors relative">
                         <ShoppingBag size={20} />
                         <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-lime-500 rounded-full border-2 border-white"></span>
-                    </button>
+                    </Link>
                     <button onClick={() => setIsOpen(!isOpen)} className="md:hidden p-2">
                         {isOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
@@ -67,6 +68,7 @@ const Navbar = () => {
                     {[
                         { name: '신상품', path: '/new-arrivals' },
                         { name: '프리미엄 리퍼브', path: '/premium-refurb' },
+                        { name: '구매하기', path: '/checkout' },
                         { name: '판매하기', path: '/sell' },
                         { name: '브랜드', path: '/brands' }
                     ].map((item) => (

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const PremiumRefurb = () => {
     return (
@@ -18,7 +19,9 @@ const PremiumRefurb = () => {
                     <p className="text-gray-600 mb-4">새 상품과 동일한 컨디션, 합리적인 가격.</p>
                     <div className="flex justify-between items-center">
                         <span className="text-xl font-bold">₩980,000</span>
-                        <button className="px-6 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors">상세보기</button>
+                        <Link to="/checkout" className="px-6 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors">
+                            구매하기
+                        </Link>
                     </div>
                 </div>
             </div>

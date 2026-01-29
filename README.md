@@ -4,6 +4,9 @@
 
 This project uses React + Vite for the UI.
 
+Frontend env:
+- Copy `.env.example` to `.env` and set `VITE_API_BASE_URL` to your backend URL.
+
 ## Backend (Express)
 
 The API server lives in `server/`.
@@ -20,6 +23,7 @@ npm run dev
 The server expects Supabase service role credentials in `.env` and exposes:
 
 - `GET /api/health`
+- `GET /api/products/active`
 - `POST /api/quotes`
 - `POST /api/orders`
 - `POST /api/payments/portone/prepare`

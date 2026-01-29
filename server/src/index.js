@@ -93,7 +93,7 @@ async function getActiveProduct(productId) {
 
   let query = supabase
     .from('products')
-    .select('id, name, price_krw, is_active')
+    .select('id, name, description, price_krw, is_active')
 
   if (productId) {
     query = query.eq('id', productId)
@@ -254,6 +254,19 @@ async function syncPaymentFromPortone(paymentId, orderId) {
 
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, time: new Date().toISOString() })
+})
+
+app.get('/api/products/active', async (req, res) => {
+  if (!supabase) {
+    return res.status(500).json({ error: 'SERVER_NOT_READY' })
+  }
+
+  const product = await getActiveProduct()
+  if (!product) {
+    return res.status(404).json({ error: 'PRODUCT_NOT_FOUND' })
+  }
+
+  return res.json({ product })
 })
 
 app.post('/api/quotes', async (req, res) => {
