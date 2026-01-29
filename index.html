@@ -6,6 +6,16 @@
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Re:Space | 프리미엄 가구 리세일</title>
+  <script>
+    (function () {
+      var url = new URL(window.location.href)
+      var redirect = url.searchParams.get('redirect')
+      if (redirect) {
+        url.searchParams.delete('redirect')
+        window.history.replaceState(null, '', redirect)
+      }
+    })()
+  </script>
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

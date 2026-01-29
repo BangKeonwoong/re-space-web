@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>Re:Space</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <script>
+      (function () {
+        var base = '/re-space-web'
+        if (location.pathname.indexOf(base + '/') !== 0) {
+          base = ''
+        }
+        var redirect = location.pathname + location.search + location.hash
+        var target = base + '/?redirect=' + encodeURIComponent(redirect)
+        location.replace(target)
+      })()
+    </script>
+  </body>
+</html>
