@@ -11,6 +11,8 @@ import Brands from './pages/Brands';
 import Quote from './pages/Quote';
 import Checkout from './pages/Checkout';
 import OrderLookup from './pages/OrderLookup';
+import ProductDetail from './pages/ProductDetail';
+import Cart from './pages/Cart';
 import AdminLayout from './layouts/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
 import ProductManager from './pages/admin/ProductManager';
@@ -42,6 +44,8 @@ function App() {
         <Route path="/quote" element={<Quote />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/orders" element={<OrderLookup />} />
+        <Route path="/products/:id" element={<ProductDetail />} />
+        <Route path="/cart" element={<Cart />} />
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>

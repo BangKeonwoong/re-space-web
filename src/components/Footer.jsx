@@ -33,7 +33,7 @@ const Footer = () => {
                             <h4 className="font-bold mb-4 font-heading text-lg">판매</h4>
                             <ul className="space-y-3 text-gray-500">
                                 <li><Link to="/quote" className="hover:text-black hover:underline transition-all">견적 받기</Link></li>
-                                <li><Link to="/checkout" className="hover:text-black hover:underline transition-all">기업 구매</Link></li>
+                                <li><Link to="/cart" className="hover:text-black hover:underline transition-all">장바구니</Link></li>
                                 <li><Link to="/sell" className="hover:text-black hover:underline transition-all">위탁 판매</Link></li>
                             </ul>
                         </div>

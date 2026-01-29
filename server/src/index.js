@@ -104,7 +104,7 @@ async function getActiveProduct(productId) {
 
   let query = supabase
     .from('products')
-    .select('id, name, description, price_krw, category, is_active')
+    .select('id, name, description, price_krw, category, image_url, is_active')
 
   if (productId) {
     query = query.eq('id', productId)
@@ -304,6 +304,30 @@ app.get('/api/products', async (req, res) => {
   }
 
   return res.json({ products: data || [] })
+})
+
+app.get('/api/products/:id', async (req, res) => {
+  if (!supabase) {
+    return res.status(500).json({ error: 'SERVER_NOT_READY' })
+  }
+
+  const productId = req.params.id
+  if (!productId || !/^[0-9a-f-]{36}$/i.test(productId)) {
+    return res.status(400).json({ error: 'INVALID_PRODUCT_ID' })
+  }
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('id, name, description, price_krw, category, image_url, is_active')
+    .eq('id', productId)
+    .eq('is_active', true)
+    .single()
+
+  if (error || !data) {
+    return res.status(404).json({ error: 'PRODUCT_NOT_FOUND' })
+  }
+
+  return res.json({ product: data })
 })
 
 app.post('/api/orders/lookup', async (req, res) => {

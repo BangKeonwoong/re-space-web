@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { apiRequest } from '../lib/api'
+import { useCart } from '../contexts/CartContext'
 
 const categories = [
   { key: 'all', label: '전체' },
@@ -10,10 +12,20 @@ const categories = [
 ]
 
 const ProductCatalog = ({ title, description, initialCategory = 'all' }) => {
+  const { addItem } = useCart()
   const [category, setCategory] = useState(initialCategory)
   const [loading, setLoading] = useState(true)
   const [products, setProducts] = useState([])
   const [error, setError] = useState(null)
+
+  const categoryMap = useMemo(
+    () =>
+      categories.reduce((acc, item) => {
+        acc[item.key] = item.label
+        return acc
+      }, {}),
+    [],
+  )
 
   const categoryLabel = useMemo(
     () => categories.find((item) => item.key === category)?.label || '전체',
@@ -94,15 +106,30 @@ const ProductCatalog = ({ title, description, initialCategory = 'all' }) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {products.map((product) => (
               <div key={product.id} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-                <div className="h-44 bg-gray-100 rounded-xl mb-5"></div>
-                <p className="text-xs uppercase tracking-widest text-gray-400">{product.category}</p>
-                <h3 className="text-xl font-bold mt-2 mb-2">{product.name}</h3>
+                <Link to={`/products/${product.id}`} className="block mb-5">
+                  <img
+                    src={product.image_url || '/products/placeholder.svg'}
+                    alt={product.name}
+                    className="h-44 w-full object-cover rounded-xl"
+                  />
+                </Link>
+                <p className="text-xs uppercase tracking-widest text-gray-400">
+                  {categoryMap[product.category] || product.category}
+                </p>
+                <Link to={`/products/${product.id}`} className="block">
+                  <h3 className="text-xl font-bold mt-2 mb-2 hover:text-lime-600 transition-colors">
+                    {product.name}
+                  </h3>
+                </Link>
                 <p className="text-gray-500 text-sm mb-4 line-clamp-2">{product.description}</p>
                 <div className="flex items-center justify-between">
                   <span className="text-lg font-bold">₩{product.price_krw.toLocaleString()}</span>
-                  <span className="text-xs font-semibold bg-lime-100 text-lime-800 px-3 py-1 rounded-full">
-                    {categoryLabel}
-                  </span>
+                  <button
+                    onClick={() => addItem(product, 1)}
+                    className="text-xs font-semibold bg-black text-white px-3 py-2 rounded-full hover:bg-gray-800"
+                  >
+                    장바구니 담기
+                  </button>
                 </div>
               </div>
             ))}

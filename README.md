@@ -25,6 +25,7 @@ The server expects Supabase service role credentials in `.env` and exposes:
 - `GET /api/health`
 - `GET /api/products/active`
 - `GET /api/products?category=...`
+- `GET /api/products/:id`
 - `POST /api/quotes`
 - `POST /api/orders`
 - `POST /api/orders/lookup`
