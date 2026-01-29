@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { apiRequest } from '../../lib/api'
+import { API_BASE_URL, apiRequest } from '../../lib/api'
 import { useAdminAuth } from '../../contexts/AdminAuthContext'
 import { resolveAssetUrl } from '../../lib/assets'
-import { supabase } from '../../lib/supabaseClient'
 
 const categoryLabels = {
   new: '신상품',
@@ -109,8 +108,8 @@ const ProductManager = () => {
       return
     }
 
-    if (!supabase) {
-      setUploadError('Supabase 환경변수가 설정되지 않았습니다.')
+    if (!accessToken) {
+      setUploadError('로그인이 필요합니다. 관리자 로그인 후 다시 시도하세요.')
       return
     }
 
@@ -118,21 +117,36 @@ const ProductManager = () => {
     setUploadError(null)
 
     try {
-      const path = createFilename(file)
-      const { error } = await supabase.storage.from(PRODUCT_BUCKET).upload(path, file, {
-        upsert: true,
-        contentType: file.type,
-        cacheControl: '3600',
+      const formData = new FormData()
+      formData.append('file', file)
+      const response = await fetch(`${API_BASE_URL}/api/admin/uploads`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: formData,
       })
 
-      if (error) {
-        throw error
+      const text = await response.text()
+      const data = text ? JSON.parse(text) : null
+
+      if (!response.ok) {
+        const message = data?.details || data?.error || 'UPLOAD_FAILED'
+        throw new Error(message)
       }
 
-      const { data } = supabase.storage.from(PRODUCT_BUCKET).getPublicUrl(path)
-      setForm((prev) => ({ ...prev, image_url: data.publicUrl }))
+      if (data?.publicUrl) {
+        setForm((prev) => ({ ...prev, image_url: data.publicUrl }))
+      } else {
+        throw new Error('UPLOAD_FAILED')
+      }
     } catch (error) {
-      setUploadError(error?.message || '이미지 업로드에 실패했습니다.')
+      const message = error?.message || '이미지 업로드에 실패했습니다.'
+      if (message.toLowerCase().includes('bucket not found')) {
+        setUploadError(`버킷을 찾을 수 없습니다. Supabase Storage에 ${PRODUCT_BUCKET} 버킷을 생성하세요.`)
+      } else {
+        setUploadError(message)
+      }
     } finally {
       setUploading(false)
     }

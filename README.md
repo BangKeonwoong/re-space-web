@@ -76,20 +76,9 @@ values ('<AUTH_USER_ID>');
 ## Product image uploads (Admin)
 
 1) Supabase Storage에 `product-images` 버킷 생성 (Public 권장)
-2) 관리자 업로드 정책 추가 (Supabase SQL editor):
-```sql
-create policy "admin upload product images" on storage.objects
-  for insert with check (
-    bucket_id = 'product-images'
-    and exists (select 1 from public.admin_users a where a.user_id = auth.uid())
-  );
-
-create policy "admin update product images" on storage.objects
-  for update using (
-    bucket_id = 'product-images'
-    and exists (select 1 from public.admin_users a where a.user_id = auth.uid())
-  );
-```
+2) `SUPABASE_PRODUCT_BUCKET` (서버) 및 `VITE_SUPABASE_PRODUCT_BUCKET` (프론트) 값 확인
+3) 어드민 업로드는 백엔드(`/api/admin/uploads`)가 처리합니다. 서비스 롤 키로 업로드하므로
+   일반적으로 Storage RLS 정책이 필요하지 않습니다.
 
 ## Backend deploy (Render)
 

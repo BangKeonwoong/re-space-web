@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { createClient } from '@supabase/supabase-js'
 import { PaymentClient, Webhook } from '@portone/server-sdk'
 import { isUnrecognizedPayment } from '@portone/server-sdk/payment'
+import multer from 'multer'
 import crypto from 'crypto'
 
 dotenv.config()
@@ -39,6 +40,7 @@ const portoneApiSecret = process.env.PORTONE_API_SECRET
 const portoneStoreId = process.env.PORTONE_STORE_ID
 const portoneChannelKey = process.env.PORTONE_CHANNEL_KEY
 const portoneWebhookSecret = process.env.PORTONE_WEBHOOK_SECRET
+const supabaseProductBucket = process.env.SUPABASE_PRODUCT_BUCKET || 'product-images'
 
 if (!supabaseUrl || !supabaseServiceKey) {
   console.warn('[server] Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
@@ -54,6 +56,7 @@ const supabase = supabaseUrl && supabaseServiceKey
     })
   : null
 const paymentClient = portoneApiSecret ? PaymentClient({ secret: portoneApiSecret }) : null
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 8 * 1024 * 1024 } })
 
 const toNumber = (value) => {
   if (value === '' || value === null || value === undefined) return undefined
@@ -331,6 +334,36 @@ app.get('/api/admin/verify', async (req, res) => {
   }
 
   return res.json({ isAdmin: Boolean(adminRow), role: adminRow?.role || null })
+})
+
+app.post('/api/admin/uploads', upload.single('file'), async (req, res) => {
+  const adminUser = await requireAdmin(req, res)
+  if (!adminUser) return
+  if (!req.file) {
+    return res.status(400).json({ error: 'FILE_REQUIRED' })
+  }
+
+  const file = req.file
+  const nameParts = file.originalname?.split('.') || []
+  const ext = nameParts.length > 1 ? nameParts.pop().toLowerCase() : 'png'
+  const safeExt = ext.replace(/[^a-z0-9]/g, '') || 'png'
+  const filePath = `products/${crypto.randomUUID()}.${safeExt}`
+
+  const { error } = await supabase.storage.from(supabaseProductBucket).upload(filePath, file.buffer, {
+    contentType: file.mimetype,
+    upsert: true,
+  })
+
+  if (error) {
+    return res.status(500).json({ error: 'UPLOAD_FAILED', details: error.message })
+  }
+
+  const { data } = supabase.storage.from(supabaseProductBucket).getPublicUrl(filePath)
+  return res.json({
+    path: filePath,
+    publicUrl: data.publicUrl,
+    bucket: supabaseProductBucket,
+  })
 })
 
 async function requireAdmin(req, res) {
