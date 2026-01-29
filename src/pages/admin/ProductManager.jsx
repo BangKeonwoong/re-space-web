@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { apiRequest } from '../../lib/api'
 import { useAdminAuth } from '../../contexts/AdminAuthContext'
 import { resolveAssetUrl } from '../../lib/assets'
+import { supabase } from '../../lib/supabaseClient'
 
 const categoryLabels = {
   new: '신상품',
@@ -18,6 +19,7 @@ const categoryOptions = [
 ]
 
 const ProductManager = () => {
+  const PRODUCT_BUCKET = import.meta.env.VITE_SUPABASE_PRODUCT_BUCKET || 'product-images'
   const { accessToken } = useAdminAuth()
   const [products, setProducts] = useState([])
   const [status, setStatus] = useState({ loading: true, error: null })
@@ -33,6 +35,10 @@ const ProductManager = () => {
   })
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState(null)
+  const [dragActive, setDragActive] = useState(false)
+  const fileInputRef = useRef(null)
 
   const isEditing = useMemo(() => Boolean(form.id), [form.id])
 
@@ -47,6 +53,8 @@ const ProductManager = () => {
       is_active: true,
     })
     setFormError(null)
+    setUploadError(null)
+    setUploading(false)
   }
 
   const fetchProducts = () => {
@@ -82,6 +90,67 @@ const ProductManager = () => {
   const handleChange = (field) => (event) => {
     const value = field === 'is_active' ? event.target.checked : event.target.value
     setForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const createFilename = (file) => {
+    const name = file?.name || 'image'
+    const parts = name.split('.')
+    const ext = parts.length > 1 ? parts.pop().toLowerCase() : 'png'
+    const uuid = crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`
+    return `products/${uuid}.${ext}`
+  }
+
+  const handleFileUpload = async (file) => {
+    if (!file) return
+    if (!file.type?.startsWith('image/')) {
+      setUploadError('이미지 파일만 업로드 가능합니다.')
+      return
+    }
+
+    if (!supabase) {
+      setUploadError('Supabase 환경변수가 설정되지 않았습니다.')
+      return
+    }
+
+    setUploading(true)
+    setUploadError(null)
+
+    try {
+      const path = createFilename(file)
+      const { error } = await supabase.storage.from(PRODUCT_BUCKET).upload(path, file, {
+        upsert: true,
+        contentType: file.type,
+        cacheControl: '3600',
+      })
+
+      if (error) {
+        throw error
+      }
+
+      const { data } = supabase.storage.from(PRODUCT_BUCKET).getPublicUrl(path)
+      setForm((prev) => ({ ...prev, image_url: data.publicUrl }))
+    } catch (error) {
+      setUploadError(error?.message || '이미지 업로드에 실패했습니다.')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleDrop = (event) => {
+    event.preventDefault()
+    setDragActive(false)
+    const file = event.dataTransfer?.files?.[0]
+    handleFileUpload(file)
+  }
+
+  const handleDragOver = (event) => {
+    event.preventDefault()
+    setDragActive(true)
+  }
+
+  const handleDragLeave = (event) => {
+    event.preventDefault()
+    setDragActive(false)
   }
 
   const handleSubmit = async (event) => {
@@ -229,13 +298,43 @@ const ProductManager = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="text-sm font-semibold text-gray-700">이미지 URL</label>
+                    <label className="text-sm font-semibold text-gray-700">상품 이미지</label>
+                    <div
+                      onDrop={handleDrop}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onClick={() => fileInputRef.current?.click()}
+                      className={`mt-2 w-full border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors ${
+                        dragActive ? 'border-black bg-gray-50' : 'border-gray-200'
+                      }`}
+                    >
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(event) => handleFileUpload(event.target.files?.[0])}
+                      />
+                      <p className="text-sm text-gray-600">
+                        {uploading ? '업로드 중...' : '드래그 앤 드롭 또는 클릭하여 업로드'}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        JPG/PNG/SVG 권장, Supabase Storage에 저장됩니다.
+                      </p>
+                    </div>
                     <input
                       value={form.image_url}
                       onChange={handleChange('image_url')}
-                      placeholder="/products/xxx.svg"
-                      className="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
+                      placeholder="또는 이미지 URL 직접 입력"
+                      className="mt-3 w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
                     />
+                    {form.image_url && (
+                      <img
+                        src={resolveAssetUrl(form.image_url)}
+                        alt="preview"
+                        className="mt-3 w-full h-36 rounded-xl object-cover bg-gray-100"
+                      />
+                    )}
                   </div>
                   <label className="flex items-center gap-2 text-sm text-gray-600">
                     <input type="checkbox" checked={form.is_active} onChange={handleChange('is_active')} />
@@ -249,11 +348,16 @@ const ProductManager = () => {
                   {formError}
                 </div>
               )}
+              {uploadError && (
+                <div className="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">
+                  {uploadError}
+                </div>
+              )}
 
               <div className="mt-6 flex items-center gap-3">
                 <button
                   type="submit"
-                  disabled={saving}
+                  disabled={saving || uploading}
                   className="bg-black text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-900 disabled:opacity-60"
                 >
                   {saving ? '저장 중...' : isEditing ? '상품 수정' : '상품 등록'}

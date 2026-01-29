@@ -9,6 +9,7 @@ Frontend env:
   - `VITE_API_BASE_URL` to your backend URL
   - `VITE_SUPABASE_URL` to your Supabase project URL
   - `VITE_SUPABASE_ANON_KEY` to your Supabase anon key
+  - `VITE_SUPABASE_PRODUCT_BUCKET` to your storage bucket (default: `product-images`)
 
 ## Backend (Express)
 
@@ -70,6 +71,24 @@ The server expects Supabase service role credentials in `.env` and exposes:
 ```sql
 insert into public.admin_users (user_id)
 values ('<AUTH_USER_ID>');
+```
+
+## Product image uploads (Admin)
+
+1) Supabase Storage에 `product-images` 버킷 생성 (Public 권장)
+2) 관리자 업로드 정책 추가 (Supabase SQL editor):
+```sql
+create policy "admin upload product images" on storage.objects
+  for insert with check (
+    bucket_id = 'product-images'
+    and exists (select 1 from public.admin_users a where a.user_id = auth.uid())
+  );
+
+create policy "admin update product images" on storage.objects
+  for update using (
+    bucket_id = 'product-images'
+    and exists (select 1 from public.admin_users a where a.user_id = auth.uid())
+  );
 ```
 
 ## Backend deploy (Render)
