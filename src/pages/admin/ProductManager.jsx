@@ -20,6 +20,7 @@ const ProductManager = () => {
   const { accessToken } = useAdminAuth()
   const [products, setProducts] = useState([])
   const [status, setStatus] = useState({ loading: true, error: null })
+  const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({
     id: null,
     name: '',
@@ -126,6 +127,7 @@ const ProductManager = () => {
       }
 
       resetForm()
+      setShowForm(false)
       fetchProducts()
     } catch (error) {
       setFormError(error.message || '상품 저장에 실패했습니다.')
@@ -145,6 +147,7 @@ const ProductManager = () => {
       is_active: product.is_active,
     })
     setFormError(null)
+    setShowForm(true)
   }
 
   return (
@@ -152,104 +155,122 @@ const ProductManager = () => {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold font-heading">상품 관리</h1>
         <button
-          onClick={resetForm}
+          onClick={() => {
+            resetForm()
+            setShowForm(true)
+          }}
           className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
         >
           + 상품 등록
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm mb-8">
-        <div className="flex items-start justify-between gap-6 flex-wrap">
-          <div className="flex-1 min-w-[240px] space-y-4">
-            <div>
-              <label className="text-sm font-semibold text-gray-700">상품명</label>
-              <input
-                value={form.name}
-                onChange={handleChange('name')}
-                placeholder="상품명을 입력하세요"
-                className="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-semibold text-gray-700">상품 설명</label>
-              <textarea
-                value={form.description}
-                onChange={handleChange('description')}
-                rows="3"
-                placeholder="상품 설명을 입력하세요"
-                className="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
-              />
-            </div>
-          </div>
-
-          <div className="w-full md:w-[320px] space-y-4">
-            <div>
-              <label className="text-sm font-semibold text-gray-700">가격 (KRW)</label>
-              <input
-                type="number"
-                min="0"
-                value={form.price_krw}
-                onChange={handleChange('price_krw')}
-                placeholder="가격을 입력하세요"
-                className="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-semibold text-gray-700">카테고리</label>
-              <select
-                value={form.category}
-                onChange={handleChange('category')}
-                className="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
-              >
-                {categoryOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-semibold text-gray-700">이미지 URL</label>
-              <input
-                value={form.image_url}
-                onChange={handleChange('image_url')}
-                placeholder="/products/xxx.svg"
-                className="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
-              />
-            </div>
-            <label className="flex items-center gap-2 text-sm text-gray-600">
-              <input type="checkbox" checked={form.is_active} onChange={handleChange('is_active')} />
-              판매 활성화
-            </label>
-          </div>
-        </div>
-
-        {formError && (
-          <div className="mt-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">
-            {formError}
-          </div>
-        )}
-
-        <div className="mt-6 flex items-center gap-3">
-          <button
-            type="submit"
-            disabled={saving}
-            className="bg-black text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-900 disabled:opacity-60"
-          >
-            {saving ? '저장 중...' : isEditing ? '상품 수정' : '상품 등록'}
-          </button>
-          {isEditing && (
+      {showForm && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4">
+          <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl p-8 relative">
             <button
               type="button"
-              onClick={resetForm}
-              className="px-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold hover:border-black"
+              onClick={() => setShowForm(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-black"
             >
-              수정 취소
+              닫기
             </button>
-          )}
+            <h2 className="text-xl font-bold mb-6">{isEditing ? '상품 수정' : '상품 등록'}</h2>
+
+            <form onSubmit={handleSubmit}>
+              <div className="flex items-start justify-between gap-6 flex-wrap">
+                <div className="flex-1 min-w-[240px] space-y-4">
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700">상품명</label>
+                    <input
+                      value={form.name}
+                      onChange={handleChange('name')}
+                      placeholder="상품명을 입력하세요"
+                      className="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700">상품 설명</label>
+                    <textarea
+                      value={form.description}
+                      onChange={handleChange('description')}
+                      rows="3"
+                      placeholder="상품 설명을 입력하세요"
+                      className="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="w-full md:w-[320px] space-y-4">
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700">가격 (KRW)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={form.price_krw}
+                      onChange={handleChange('price_krw')}
+                      placeholder="가격을 입력하세요"
+                      className="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700">카테고리</label>
+                    <select
+                      value={form.category}
+                      onChange={handleChange('category')}
+                      className="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
+                    >
+                      {categoryOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700">이미지 URL</label>
+                    <input
+                      value={form.image_url}
+                      onChange={handleChange('image_url')}
+                      placeholder="/products/xxx.svg"
+                      className="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
+                    />
+                  </div>
+                  <label className="flex items-center gap-2 text-sm text-gray-600">
+                    <input type="checkbox" checked={form.is_active} onChange={handleChange('is_active')} />
+                    판매 활성화
+                  </label>
+                </div>
+              </div>
+
+              {formError && (
+                <div className="mt-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">
+                  {formError}
+                </div>
+              )}
+
+              <div className="mt-6 flex items-center gap-3">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="bg-black text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-900 disabled:opacity-60"
+                >
+                  {saving ? '저장 중...' : isEditing ? '상품 수정' : '상품 등록'}
+                </button>
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    className="px-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold hover:border-black"
+                  >
+                    수정 취소
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
         </div>
-      </form>
+      )}
 
       {status.error && (
         <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">
