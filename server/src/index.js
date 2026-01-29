@@ -110,6 +110,24 @@ const portoneCompleteSchema = z.object({
   orderId: z.string().uuid().optional(),
 })
 
+const productCreateSchema = z.object({
+  name: z.string().min(1).max(120),
+  description: z.string().max(2000).optional().or(z.literal('')),
+  price_krw: z.preprocess(toNumber, z.number().int().min(0)),
+  category: z.string().min(1).max(40).optional().default('new'),
+  image_url: z.string().max(500).optional().or(z.literal('')),
+  is_active: z.boolean().optional().default(true),
+})
+
+const productUpdateSchema = z.object({
+  name: z.string().min(1).max(120).optional(),
+  description: z.string().max(2000).optional().or(z.literal('')),
+  price_krw: z.preprocess(toNumber, z.number().int().min(0)).optional(),
+  category: z.string().min(1).max(40).optional(),
+  image_url: z.string().max(500).optional().or(z.literal('')),
+  is_active: z.boolean().optional(),
+})
+
 function createOrderNumber() {
   const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '')
   const rand = crypto.randomBytes(3).toString('hex').toUpperCase()
@@ -313,6 +331,121 @@ app.get('/api/admin/verify', async (req, res) => {
   }
 
   return res.json({ isAdmin: Boolean(adminRow), role: adminRow?.role || null })
+})
+
+async function requireAdmin(req, res) {
+  if (!supabase) {
+    res.status(500).json({ error: 'SERVER_NOT_READY' })
+    return null
+  }
+
+  const authHeader = req.headers.authorization || ''
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
+  if (!token) {
+    res.status(401).json({ error: 'MISSING_TOKEN' })
+    return null
+  }
+
+  const { data: userData, error: userError } = await supabase.auth.getUser(token)
+  if (userError || !userData?.user) {
+    res.status(401).json({ error: 'INVALID_TOKEN' })
+    return null
+  }
+
+  const { data: adminRow, error: adminError } = await supabase
+    .from('admin_users')
+    .select('user_id')
+    .eq('user_id', userData.user.id)
+    .maybeSingle()
+
+  if (adminError) {
+    res.status(500).json({ error: 'ADMIN_CHECK_FAILED', details: adminError.message })
+    return null
+  }
+  if (!adminRow) {
+    res.status(403).json({ error: 'ADMIN_ONLY' })
+    return null
+  }
+
+  return userData.user
+}
+
+app.get('/api/admin/products', async (req, res) => {
+  const adminUser = await requireAdmin(req, res)
+  if (!adminUser) return
+
+  const { data, error } = await supabase
+    .from('products')
+    .select('id, name, description, price_krw, category, image_url, is_active, created_at')
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    return res.status(500).json({ error: 'DB_ERROR', details: error.message })
+  }
+
+  return res.json({ products: data || [] })
+})
+
+app.post('/api/admin/products', async (req, res) => {
+  const adminUser = await requireAdmin(req, res)
+  if (!adminUser) return
+
+  const parsed = productCreateSchema.safeParse(req.body)
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'INVALID_INPUT', details: parsed.error.flatten() })
+  }
+
+  const payload = parsed.data
+  const { data, error } = await supabase
+    .from('products')
+    .insert({
+      name: payload.name,
+      description: payload.description || null,
+      price_krw: payload.price_krw,
+      category: payload.category,
+      image_url: payload.image_url || null,
+      is_active: payload.is_active,
+    })
+    .select('id, name, description, price_krw, category, image_url, is_active')
+    .single()
+
+  if (error) {
+    return res.status(500).json({ error: 'DB_ERROR', details: error.message })
+  }
+
+  return res.status(201).json({ product: data })
+})
+
+app.patch('/api/admin/products/:id', async (req, res) => {
+  const adminUser = await requireAdmin(req, res)
+  if (!adminUser) return
+
+  const productId = req.params.id
+  if (!productId || !/^[0-9a-f-]{36}$/i.test(productId)) {
+    return res.status(400).json({ error: 'INVALID_PRODUCT_ID' })
+  }
+
+  const parsed = productUpdateSchema.safeParse(req.body)
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'INVALID_INPUT', details: parsed.error.flatten() })
+  }
+
+  const updates = { ...parsed.data }
+  if ('description' in updates && updates.description === '') updates.description = null
+  if ('image_url' in updates && updates.image_url === '') updates.image_url = null
+
+  const { data, error } = await supabase
+    .from('products')
+    .update(updates)
+    .eq('id', productId)
+    .select('id, name, description, price_krw, category, image_url, is_active')
+    .single()
+
+  if (error) {
+    return res.status(500).json({ error: 'DB_ERROR', details: error.message })
+  }
+
+  return res.json({ product: data })
 })
 
 app.get('/api/products/active', async (req, res) => {

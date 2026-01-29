@@ -192,6 +192,7 @@ export const AdminAuthProvider = ({ children }) => {
     () => ({
       session,
       user: session?.user || null,
+      accessToken: session?.access_token || null,
       isAdmin,
       loading,
       error,
