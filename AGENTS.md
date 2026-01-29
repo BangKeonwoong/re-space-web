@@ -16,7 +16,8 @@
 4) 운영 배포/모니터링/정책 문서
 
 ## 현재 진행 단계
-- Phase 1 - Foundation: Supabase 프로젝트 생성/스키마/시드가 선행 필요
+- Phase 1 - Foundation: 완료
+- Phase 2 - Payments: 진행 중 (PortOne 연동 구현)
 
 ## 단계별 체크리스트
 

@@ -22,6 +22,9 @@ The server expects Supabase service role credentials in `.env` and exposes:
 - `GET /api/health`
 - `POST /api/quotes`
 - `POST /api/orders`
+- `POST /api/payments/portone/prepare`
+- `POST /api/payments/portone/complete`
+- `POST /api/webhooks/portone`
 
 ## Supabase setup
 
@@ -29,6 +32,11 @@ The server expects Supabase service role credentials in `.env` and exposes:
 2) Run `supabase/schema.sql` in the SQL editor.
 3) Seed one active product with `supabase/seed.sql`.
 4) Copy the project URL and service role key into `server/.env`.
+5) Add PortOne credentials to `server/.env`:
+   - `PORTONE_API_SECRET`
+   - `PORTONE_STORE_ID`
+   - `PORTONE_CHANNEL_KEY`
+   - `PORTONE_WEBHOOK_SECRET`
 
 ## Notes
 
