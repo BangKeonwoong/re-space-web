@@ -18,6 +18,7 @@
 ## 현재 진행 단계
 - Phase 1 - Foundation: 완료
 - Phase 2 - Payments: 진행 중 (Render 배포 + PortOne 웹훅 등록 대기)
+ - Phase 3 - Frontend: 진행 중 (상품 카탈로그/주문조회)
 
 ## 단계별 체크리스트
 
@@ -38,6 +39,7 @@
 - [x] 상품 상세 → 주문 → 결제 진입
 - [x] 견적 문의 폼 연동
 - [x] 회원/비회원 주문 조회
+- [x] 상품 카탈로그 + 카테고리 필터
 
 ### Phase 4 - Ops
 - [ ] 백엔드 배포 (Render/Railway/Vercel 중 선택)

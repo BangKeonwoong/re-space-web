@@ -5,6 +5,7 @@ create table if not exists public.products (
   name text not null,
   description text,
   price_krw integer not null check (price_krw >= 0),
+  category text not null default 'new',
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()

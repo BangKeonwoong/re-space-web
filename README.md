@@ -24,6 +24,7 @@ The server expects Supabase service role credentials in `.env` and exposes:
 
 - `GET /api/health`
 - `GET /api/products/active`
+- `GET /api/products?category=...`
 - `POST /api/quotes`
 - `POST /api/orders`
 - `POST /api/orders/lookup`
@@ -36,8 +37,10 @@ The server expects Supabase service role credentials in `.env` and exposes:
 1) Create a Supabase project.
 2) Run `supabase/schema.sql` in the SQL editor.
 3) Seed one active product with `supabase/seed.sql`.
-4) Copy the project URL and service role key into `server/.env`.
-5) Add PortOne credentials to `server/.env`:
+4) Apply migrations if you already created tables:
+   - `supabase/migrations/20260129_add_product_category.sql`
+5) Copy the project URL and service role key into `server/.env`.
+6) Add PortOne credentials to `server/.env`:
    - `PORTONE_API_SECRET`
    - `PORTONE_STORE_ID`
    - `PORTONE_CHANNEL_KEY`
