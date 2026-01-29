@@ -43,6 +43,17 @@ The server expects Supabase service role credentials in `.env` and exposes:
 - Database schema lives in `supabase/schema.sql`.
 - For production, use a proper server host (Vercel/Render/Railway) instead of GitHub Pages.
 
+## Backend deploy (Render)
+
+This repo includes `render.yaml` for a Node web service under `server/`. Render will use the build
+and start commands declared there. See Render Blueprint spec for field details.
+
+Manual setup (if you don't use the blueprint):
+- Root directory: `server/`
+- Build command: `npm install`
+- Start command: `npm start`
+- Health check path: `/api/health`
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

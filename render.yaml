@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: respace-api
+    runtime: node
+    region: singapore
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
