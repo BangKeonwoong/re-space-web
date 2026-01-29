@@ -1,0 +1,14 @@
+<svg width="640" height="480" viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff7ed"/>
+      <stop offset="100%" stop-color="#fed7aa"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="480" fill="url(#bg)"/>
+  <circle cx="200" cy="200" r="120" fill="#0f172a" opacity="0.08"/>
+  <rect x="240" y="120" width="260" height="190" rx="60" fill="#0f172a" opacity="0.15"/>
+  <rect x="300" y="310" width="120" height="80" rx="20" fill="#0f172a" opacity="0.2"/>
+  <text x="60" y="420" font-family="Arial, sans-serif" font-size="26" fill="#0f172a" font-weight="700">Eames Molded</text>
+  <text x="60" y="450" font-family="Arial, sans-serif" font-size="16" fill="#7c2d12">Refurb • Verified Parts</text>
+</svg>

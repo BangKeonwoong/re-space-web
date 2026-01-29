@@ -14,7 +14,7 @@ select
   100000,
   true,
   'new',
-  '/products/placeholder.svg'
+  '/products/modern-desk.svg'
 where not exists (select 1 from public.products where name = 'Re:Space Core Product');
 
 insert into public.products (name, description, price_krw, is_active, category, image_url)
@@ -24,7 +24,7 @@ select
   980000,
   true,
   'premium-refurb',
-  '/products/placeholder.svg'
+  '/products/aeron.svg'
 where not exists (select 1 from public.products where name = 'Aeron Remastered (S-Grade)');
 
 insert into public.products (name, description, price_krw, is_active, category, image_url)
@@ -34,7 +34,7 @@ select
   420000,
   true,
   'refurb',
-  '/products/placeholder.svg'
+  '/products/eames-molded.svg'
 where not exists (select 1 from public.products where name = 'Eames Molded (Refurb)');
 
 insert into public.products (name, description, price_krw, is_active, category, image_url)
@@ -44,7 +44,7 @@ select
   2800000,
   true,
   'vintage',
-  '/products/placeholder.svg'
+  '/products/eames-lounge.svg'
 where not exists (select 1 from public.products where name = 'Eames Lounge (Vintage)');
 
 insert into public.products (name, description, price_krw, is_active, category, image_url)
@@ -54,5 +54,25 @@ select
   680000,
   true,
   'new',
-  '/products/placeholder.svg'
+  '/products/nelson-bench.svg'
 where not exists (select 1 from public.products where name = 'Nelson Bench (New)');
+
+insert into public.products (name, description, price_krw, is_active, category, image_url)
+select
+  'Knoll Modular Sofa',
+  'Premium refurbished modular sofa with fresh upholstery.',
+  1850000,
+  true,
+  'premium-refurb',
+  '/products/knoll-sofa.svg'
+where not exists (select 1 from public.products where name = 'Knoll Modular Sofa');
+
+insert into public.products (name, description, price_krw, is_active, category, image_url)
+select
+  'Modern Desk (Oak)',
+  'Minimal workstation desk with solid oak top.',
+  520000,
+  true,
+  'new',
+  '/products/modern-desk.svg'
+where not exists (select 1 from public.products where name = 'Modern Desk (Oak)');

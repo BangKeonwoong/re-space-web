@@ -18,6 +18,7 @@ import Dashboard from './pages/admin/Dashboard';
 import ProductManager from './pages/admin/ProductManager';
 import CustomerManager from './pages/admin/CustomerManager';
 import AdminLogin from './pages/admin/AdminLogin';
+import QuoteManager from './pages/admin/QuoteManager';
 
 const AgentButton = () => {
   return (
@@ -54,6 +55,7 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="products" element={<ProductManager />} />
           <Route path="customers" element={<CustomerManager />} />
+          <Route path="quotes" element={<QuoteManager />} />
         </Route>
       </Routes>
       <Footer />

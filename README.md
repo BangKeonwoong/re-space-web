@@ -46,6 +46,7 @@ The server expects Supabase service role credentials in `.env` and exposes:
    - `supabase/migrations/20260129_add_product_image_url.sql`
    - `supabase/migrations/20260129_add_order_is_cart.sql`
    - `supabase/migrations/20260129_add_order_items.sql`
+   - `supabase/migrations/20260129_add_admin_policies.sql`
 5) Copy the project URL and service role key into `server/.env`.
 6) Add PortOne credentials to `server/.env`:
    - `PORTONE_API_SECRET`

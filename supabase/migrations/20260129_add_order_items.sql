@@ -17,3 +17,11 @@ create policy "order items view via orders" on public.order_items
       where o.id = order_items.order_id and o.user_id = auth.uid()
     )
   );
+
+create policy "order items view by admin" on public.order_items
+  for select using (
+    exists (
+      select 1 from public.admin_users a
+      where a.user_id = auth.uid()
+    )
+  );
