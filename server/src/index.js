@@ -4,7 +4,8 @@ import helmet from 'helmet'
 import dotenv from 'dotenv'
 import { z } from 'zod'
 import { createClient } from '@supabase/supabase-js'
-import { PaymentClient, Webhook, isUnrecognizedPayment, isUnrecognizedWebhook } from '@portone/server-sdk'
+import { PaymentClient, Webhook } from '@portone/server-sdk'
+import { isUnrecognizedPayment } from '@portone/server-sdk/payment'
 import crypto from 'crypto'
 
 dotenv.config()
@@ -437,7 +438,7 @@ app.post('/api/webhooks/portone', async (req, res) => {
 
   try {
     const webhook = await Webhook.verify(portoneWebhookSecret, payload, headers)
-    if (isUnrecognizedWebhook(webhook)) {
+    if (Webhook.isUnrecognizedWebhook(webhook)) {
       return res.json({ ok: true })
     }
 
