@@ -38,6 +38,8 @@ const ProductManager = () => {
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState(null)
   const [dragActive, setDragActive] = useState(false)
+  const [viewMode, setViewMode] = useState('list')
+  const [previewImage, setPreviewImage] = useState(null)
   const fileInputRef = useRef(null)
 
   const isEditing = useMemo(() => Boolean(form.id), [form.id])
@@ -222,17 +224,40 @@ const ProductManager = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold font-heading">상품 관리</h1>
-        <button
-          onClick={() => {
-            resetForm()
-            setShowForm(true)
-          }}
-          className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
-        >
-          + 상품 등록
-        </button>
+      <div className="flex flex-wrap gap-4 items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold font-heading">상품 관리</h1>
+          <p className="text-sm text-gray-500 mt-1">리스트/그리드 보기로 전환할 수 있습니다.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`px-3 py-2 text-sm font-semibold ${
+                viewMode === 'list' ? 'bg-black text-white' : 'text-gray-500 hover:text-black'
+              }`}
+            >
+              리스트
+            </button>
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`px-3 py-2 text-sm font-semibold ${
+                viewMode === 'grid' ? 'bg-black text-white' : 'text-gray-500 hover:text-black'
+              }`}
+            >
+              그리드
+            </button>
+          </div>
+          <button
+            onClick={() => {
+              resetForm()
+              setShowForm(true)
+            }}
+            className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
+          >
+            + 상품 등록
+          </button>
+        </div>
       </div>
 
       {showForm && (
@@ -377,78 +402,145 @@ const ProductManager = () => {
         </div>
       )}
 
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-6"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div className="bg-white rounded-2xl p-4 shadow-2xl max-w-3xl w-full">
+            <img src={previewImage} alt="preview" className="w-full max-h-[70vh] object-contain rounded-xl" />
+            <button
+              type="button"
+              onClick={() => setPreviewImage(null)}
+              className="mt-4 w-full px-4 py-2 rounded-xl border border-gray-200 text-sm font-semibold hover:border-black"
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
+
       {status.error && (
         <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">
           {status.error}
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-gray-50 border-b border-gray-100">
-            <tr>
-              <th className="p-4 font-medium text-gray-500">상품 정보</th>
-              <th className="p-4 font-medium text-gray-500">카테고리</th>
-              <th className="p-4 font-medium text-gray-500">가격</th>
-              <th className="p-4 font-medium text-gray-500">상태</th>
-              <th className="p-4 font-medium text-gray-500">재고</th>
-              <th className="p-4 font-medium text-gray-500">관리</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {status.loading && (
+      {viewMode === 'list' ? (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                <td colSpan="6" className="p-6 text-center text-gray-400">
-                  상품 정보를 불러오는 중...
-                </td>
+                <th className="p-4 font-medium text-gray-500">상품 정보</th>
+                <th className="p-4 font-medium text-gray-500">카테고리</th>
+                <th className="p-4 font-medium text-gray-500">가격</th>
+                <th className="p-4 font-medium text-gray-500">상태</th>
+                <th className="p-4 font-medium text-gray-500">재고</th>
+                <th className="p-4 font-medium text-gray-500">관리</th>
               </tr>
-            )}
-            {!status.loading && products.length === 0 && (
-              <tr>
-                <td colSpan="6" className="p-6 text-center text-gray-400">
-                  등록된 상품이 없습니다.
-                </td>
-              </tr>
-            )}
-            {!status.loading &&
-              products.map((product) => (
-                <tr key={product.id}>
-                  <td className="p-4 flex items-center gap-3">
-                    <img
-                      src={resolveAssetUrl(product.image_url)}
-                      alt={product.name}
-                      className="w-12 h-12 rounded-lg object-cover bg-gray-100"
-                    />
-                    <div>
-                      <p className="font-medium">{product.name}</p>
-                      <p className="text-xs text-gray-400 line-clamp-1">{product.description}</p>
-                    </div>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {status.loading && (
+                <tr>
+                  <td colSpan="6" className="p-6 text-center text-gray-400">
+                    상품 정보를 불러오는 중...
                   </td>
-                  <td className="p-4 text-gray-500">{categoryLabels[product.category] || product.category}</td>
-                  <td className="p-4">₩{product.price_krw.toLocaleString()}</td>
-                  <td className="p-4">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        product.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-                      }`}
-                    >
-                      {product.is_active ? '판매중' : '비활성'}
-                    </span>
+                </tr>
+              )}
+              {!status.loading && products.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="p-6 text-center text-gray-400">
+                    등록된 상품이 없습니다.
                   </td>
-                  <td className="p-4 text-gray-400">-</td>
-                  <td className="p-4">
+                </tr>
+              )}
+              {!status.loading &&
+                products.map((product) => (
+                  <tr key={product.id}>
+                    <td className="p-4 flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewImage(resolveAssetUrl(product.image_url))}
+                        className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100"
+                      >
+                        <img
+                          src={resolveAssetUrl(product.image_url)}
+                          alt={product.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                      <div>
+                        <p className="font-medium">{product.name}</p>
+                        <p className="text-xs text-gray-400 line-clamp-1">{product.description}</p>
+                      </div>
+                    </td>
+                    <td className="p-4 text-gray-500">{categoryLabels[product.category] || product.category}</td>
+                    <td className="p-4">₩{product.price_krw.toLocaleString()}</td>
+                    <td className="p-4">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                          product.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                        }`}
+                      >
+                        {product.is_active ? '판매중' : '비활성'}
+                      </span>
+                    </td>
+                    <td className="p-4 text-gray-400">-</td>
+                    <td className="p-4">
+                      <button
+                        onClick={() => handleEdit(product)}
+                        className="text-gray-400 hover:text-black"
+                      >
+                        수정
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {status.loading && (
+            <div className="col-span-full text-center text-gray-400 py-12">상품 정보를 불러오는 중...</div>
+          )}
+          {!status.loading && products.length === 0 && (
+            <div className="col-span-full text-center text-gray-400 py-12">등록된 상품이 없습니다.</div>
+          )}
+          {!status.loading &&
+            products.map((product) => (
+              <div key={product.id} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => setPreviewImage(resolveAssetUrl(product.image_url))}
+                  className="w-full h-44 rounded-xl overflow-hidden bg-gray-100"
+                >
+                  <img
+                    src={resolveAssetUrl(product.image_url)}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+                <div className="mt-4">
+                  <p className="text-xs uppercase tracking-widest text-gray-400">
+                    {categoryLabels[product.category] || product.category}
+                  </p>
+                  <h3 className="text-lg font-bold mt-1">{product.name}</h3>
+                  <p className="text-sm text-gray-500 line-clamp-2 mt-2">{product.description}</p>
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="text-lg font-semibold">₩{product.price_krw.toLocaleString()}</span>
                     <button
                       onClick={() => handleEdit(product)}
-                      className="text-gray-400 hover:text-black"
+                      className="text-sm font-semibold text-gray-500 hover:text-black"
                     >
                       수정
                     </button>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-      </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+        </div>
+      )}
     </div>
   )
 }
