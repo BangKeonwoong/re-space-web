@@ -134,6 +134,8 @@ function mapPortonePaymentStatus(status) {
   switch (status) {
     case 'PAID':
       return { payment: 'paid', order: 'paid' }
+    case 'PENDING':
+      return { payment: 'pending', order: 'pending' }
     case 'VIRTUAL_ACCOUNT_ISSUED':
       return { payment: 'ready', order: 'ready' }
     case 'CANCELLED':
@@ -461,16 +463,19 @@ app.post('/api/webhooks/portone', async (req, res) => {
       return res.json({ ok: true })
     }
 
-    const normalized = mapWebhookTypeToStatus(webhook.type)
     const paymentId = webhook.data?.paymentId
 
-    if (!paymentId || !normalized) {
+    if (!paymentId) {
       return res.json({ ok: true })
     }
 
     if (paymentClient) {
       await syncPaymentFromPortone(paymentId)
     } else {
+      const normalized = mapWebhookTypeToStatus(webhook.type)
+      if (!normalized) {
+        return res.json({ ok: true })
+      }
       await applyPaymentUpdate({
         paymentId,
         normalized,
