@@ -79,6 +79,9 @@ const AdminLogin = () => {
         <p className="text-xs text-gray-400 mt-4 leading-relaxed">
           관리자 권한이 없는 계정은 로그인할 수 없습니다. 권한이 필요하면 관리자에게 요청하세요.
         </p>
+        <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+          로그인 실패 시 Supabase URL/anon key가 동일한 프로젝트인지 확인해주세요.
+        </p>
       </div>
     </div>
   )

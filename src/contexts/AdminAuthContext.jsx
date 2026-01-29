@@ -62,6 +62,27 @@ export const AdminAuthProvider = ({ children }) => {
     }
   }, [])
 
+  const mapAuthError = (authError) => {
+    const message = authError?.message || ''
+    const lower = message.toLowerCase()
+    if (lower.includes('invalid login credentials')) {
+      return '이메일/비밀번호가 일치하지 않거나 다른 Supabase 프로젝트를 사용 중입니다.'
+    }
+    if (lower.includes('email not confirmed')) {
+      return '이메일 인증이 완료되지 않았습니다. Supabase Auth에서 Confirm 처리하세요.'
+    }
+    if (lower.includes('invalid api key')) {
+      return 'Supabase anon 키가 올바르지 않습니다.'
+    }
+    if (lower.includes('invalid url')) {
+      return 'Supabase URL 형식이 올바르지 않습니다.'
+    }
+    if (message) {
+      return `로그인 실패: ${message}`
+    }
+    return '로그인에 실패했습니다. 이메일/비밀번호를 확인해주세요.'
+  }
+
   const signIn = async ({ email, password }) => {
     if (!supabase) {
       setError('Supabase 환경변수가 설정되지 않았습니다.')
@@ -77,7 +98,7 @@ export const AdminAuthProvider = ({ children }) => {
 
     if (signInError) {
       setLoading(false)
-      setError('로그인에 실패했습니다. 이메일/비밀번호를 확인해주세요.')
+      setError(mapAuthError(signInError))
       return { ok: false }
     }
 
