@@ -6,17 +6,21 @@ const AdminAuthContext = createContext(null)
 const getAdminStatus = async (user) => {
   if (!supabase || !user) return { isAdmin: false, error: null }
 
-  const { data, error } = await supabase
-    .from('admin_users')
-    .select('user_id')
-    .eq('user_id', user.id)
-    .maybeSingle()
+  try {
+    const { data, error } = await supabase
+      .from('admin_users')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle()
 
-  if (error) {
+    if (error) {
+      return { isAdmin: false, error }
+    }
+
+    return { isAdmin: Boolean(data), error: null }
+  } catch (error) {
     return { isAdmin: false, error }
   }
-
-  return { isAdmin: Boolean(data), error: null }
 }
 
 export const AdminAuthProvider = ({ children }) => {
