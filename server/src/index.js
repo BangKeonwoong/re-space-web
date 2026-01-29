@@ -336,6 +336,39 @@ app.get('/api/admin/verify', async (req, res) => {
   return res.json({ isAdmin: Boolean(adminRow), role: adminRow?.role || null })
 })
 
+app.get('/api/admin/users', async (req, res) => {
+  const adminUser = await requireAdmin(req, res)
+  if (!adminUser) return
+
+  const page = Math.max(1, Number(req.query.page || 1))
+  const perPage = Math.min(100, Math.max(5, Number(req.query.perPage || 20)))
+  const query = typeof req.query.q === 'string' ? req.query.q.trim().toLowerCase() : ''
+
+  const { data, error } = await supabase.auth.admin.listUsers({ page, perPage })
+  if (error) {
+    return res.status(500).json({ error: 'ADMIN_USERS_FAILED', details: error.message })
+  }
+
+  const users = (data?.users || []).map((user) => ({
+    id: user.id,
+    email: user.email,
+    created_at: user.created_at,
+    last_sign_in_at: user.last_sign_in_at,
+    email_confirmed_at: user.email_confirmed_at,
+  }))
+
+  const filtered = query
+    ? users.filter((user) => (user.email || '').toLowerCase().includes(query))
+    : users
+
+  return res.json({
+    users: filtered,
+    page,
+    perPage,
+    total: data?.total || filtered.length,
+  })
+})
+
 app.post('/api/admin/uploads', upload.single('file'), async (req, res) => {
   const adminUser = await requireAdmin(req, res)
   if (!adminUser) return
@@ -500,6 +533,7 @@ app.get('/api/products', async (req, res) => {
   }
 
   const category = typeof req.query.category === 'string' ? req.query.category.trim() : ''
+  const queryText = typeof req.query.q === 'string' ? req.query.q.trim() : ''
   let query = supabase
     .from('products')
     .select('id, name, description, price_krw, category, image_url, is_active')
@@ -508,6 +542,10 @@ app.get('/api/products', async (req, res) => {
 
   if (category && category !== 'all') {
     query = query.eq('category', category)
+  }
+  if (queryText) {
+    const escaped = queryText.replace(/%/g, '\\%').replace(/_/g, '\\_')
+    query = query.or(`name.ilike.%${escaped}%,description.ilike.%${escaped}%`)
   }
 
   const { data, error } = await query

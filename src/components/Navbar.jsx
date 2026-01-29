@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Search, ShoppingBag, Menu, X } from 'lucide-react';
+import { Box, Search, ShoppingBag, Menu, X, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const { totalCount } = useCart();
+    const { user } = useAuth();
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -52,9 +54,9 @@ const Navbar = () => {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <button className="p-2 hover:bg-black/5 rounded-full transition-colors">
+                    <Link to="/search" className="p-2 hover:bg-black/5 rounded-full transition-colors">
                         <Search size={20} />
-                    </button>
+                    </Link>
                     <Link to="/cart" className="p-2 hover:bg-black/5 rounded-full transition-colors relative">
                         <ShoppingBag size={20} />
                         {totalCount > 0 && (
@@ -62,6 +64,9 @@ const Navbar = () => {
                                 {totalCount}
                             </span>
                         )}
+                    </Link>
+                    <Link to={user ? "/account" : "/login"} className="p-2 hover:bg-black/5 rounded-full transition-colors">
+                        <User size={20} />
                     </Link>
                     <button onClick={() => setIsOpen(!isOpen)} className="md:hidden p-2">
                         {isOpen ? <X size={24} /> : <Menu size={24} />}

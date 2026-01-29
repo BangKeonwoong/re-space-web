@@ -30,6 +30,7 @@ The server expects Supabase service role credentials in `.env` and exposes:
 - `GET /api/products/active`
 - `GET /api/products?category=...`
 - `GET /api/products/:id`
+- `GET /api/admin/users`
 - `POST /api/quotes`
 - `POST /api/orders`
 - `POST /api/orders/lookup`
@@ -64,6 +65,8 @@ The server expects Supabase service role credentials in `.env` and exposes:
 
 - Admin UI: `/admin`
 - Admin login UI: `/admin/login`
+- Member admin UI: `/admin/customers`
+- Signup/Login UI: `/signup`, `/login`
 - Supabase Auth로 로그인합니다.
 - 관리자 권한은 `admin_users` 테이블에 `user_id`를 등록해야 활성화됩니다.
 

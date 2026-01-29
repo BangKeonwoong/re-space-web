@@ -19,6 +19,10 @@ import ProductManager from './pages/admin/ProductManager';
 import CustomerManager from './pages/admin/CustomerManager';
 import AdminLogin from './pages/admin/AdminLogin';
 import QuoteManager from './pages/admin/QuoteManager';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import Account from './pages/Account';
+import Search from './pages/Search';
 
 const AgentButton = () => {
   return (
@@ -51,6 +55,10 @@ function App() {
         <Route path="/orders" element={<OrderLookup />} />
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/account" element={<Account />} />
+        <Route path="/search" element={<Search />} />
         <Route path="/admin/login" element={<AdminLogin />} />
 
         {/* Admin Routes */}

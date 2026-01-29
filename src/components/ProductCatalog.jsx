@@ -5,7 +5,13 @@ import { useCart } from '../contexts/CartContext'
 import { resolveAssetUrl } from '../lib/assets'
 import { CATALOG_CATEGORIES, getCategoryLabel } from '../lib/catalog'
 
-const ProductCatalog = ({ title, description, initialCategory = 'all' }) => {
+const ProductCatalog = ({
+  title,
+  description,
+  initialCategory = 'all',
+  searchQuery = '',
+  hideCategories = false,
+}) => {
   const { addItem } = useCart()
   const [category, setCategory] = useState(initialCategory)
   const [loading, setLoading] = useState(true)
@@ -22,8 +28,11 @@ const ProductCatalog = ({ title, description, initialCategory = 'all' }) => {
     setLoading(true)
     setError(null)
 
-    const query = category && category !== 'all' ? `?category=${category}` : ''
-    apiRequest(`/api/products${query}`)
+    const params = new URLSearchParams()
+    if (category && category !== 'all') params.set('category', category)
+    if (searchQuery) params.set('q', searchQuery)
+    const query = params.toString()
+    apiRequest(`/api/products${query ? `?${query}` : ''}`)
       .then((data) => {
         if (mounted) setProducts(data.products || [])
       })
@@ -37,7 +46,7 @@ const ProductCatalog = ({ title, description, initialCategory = 'all' }) => {
     return () => {
       mounted = false
     }
-  }, [category])
+  }, [category, searchQuery])
 
   return (
     <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
@@ -46,21 +55,23 @@ const ProductCatalog = ({ title, description, initialCategory = 'all' }) => {
           <h1 className="text-4xl font-bold mb-3 font-heading">{title}</h1>
           {description && <p className="text-gray-500 max-w-2xl">{description}</p>}
         </div>
-        <div className="flex flex-wrap gap-3">
-          {CATALOG_CATEGORIES.map((item) => (
-            <button
-              key={item.key}
-              onClick={() => setCategory(item.key)}
-              className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${
-                category === item.key
-                  ? 'bg-black text-white border-black'
-                  : 'bg-white border-gray-200 text-gray-600 hover:border-black hover:text-black'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+        {!hideCategories && (
+          <div className="flex flex-wrap gap-3">
+            {CATALOG_CATEGORIES.map((item) => (
+              <button
+                key={item.key}
+                onClick={() => setCategory(item.key)}
+                className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${
+                  category === item.key
+                    ? 'bg-black text-white border-black'
+                    : 'bg-white border-gray-200 text-gray-600 hover:border-black hover:text-black'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {loading && (
