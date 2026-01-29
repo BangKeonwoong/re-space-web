@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { supabase } from '../../lib/supabaseClient'
-import { useAdminAuth } from '../../contexts/AdminAuthContext'
+import React from 'react'
+import { useQuotes } from './hooks/useQuotes'
 
 const statusLabels = {
   new: '신규',
@@ -12,51 +11,7 @@ const statusLabels = {
 const statusOptions = ['new', 'in_progress', 'done', 'closed']
 
 const QuoteManager = () => {
-  const { isConfigured } = useAdminAuth()
-  const [quotes, setQuotes] = useState([])
-  const [status, setStatus] = useState({ loading: true, error: null })
-  const [savingId, setSavingId] = useState(null)
-
-  const fetchQuotes = async () => {
-    if (!supabase) return
-    setStatus({ loading: true, error: null })
-    const { data, error } = await supabase
-      .from('quotes')
-      .select('id, customer_name, customer_email, customer_phone, quantity, message, status, created_at')
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      setStatus({ loading: false, error: '견적 목록을 불러오지 못했습니다.' })
-      return
-    }
-
-    setQuotes(data || [])
-    setStatus({ loading: false, error: null })
-  }
-
-  useEffect(() => {
-    if (isConfigured) {
-      fetchQuotes()
-    } else {
-      setStatus({ loading: false, error: 'Supabase 환경변수가 설정되지 않았습니다.' })
-    }
-  }, [isConfigured])
-
-  const handleStatusChange = async (quoteId, nextStatus) => {
-    if (!supabase) return
-    setSavingId(quoteId)
-    const { error } = await supabase
-      .from('quotes')
-      .update({ status: nextStatus })
-      .eq('id', quoteId)
-
-    if (!error) {
-      setQuotes((prev) =>
-        prev.map((item) => (item.id === quoteId ? { ...item, status: nextStatus } : item)),
-      )
-    }
-    setSavingId(null)
-  }
+  const { quotes, status, savingId, fetchQuotes, updateStatus } = useQuotes()
 
   return (
     <div>
@@ -121,7 +76,7 @@ const QuoteManager = () => {
                   <td className="p-4">
                     <select
                       value={quote.status}
-                      onChange={(event) => handleStatusChange(quote.id, event.target.value)}
+                      onChange={(event) => updateStatus(quote.id, event.target.value)}
                       disabled={savingId === quote.id}
                       className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
                     >

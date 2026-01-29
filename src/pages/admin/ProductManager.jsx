@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { API_BASE_URL, apiRequest } from '../../lib/api'
 import { useAdminAuth } from '../../contexts/AdminAuthContext'
-import { resolveAssetUrl } from '../../lib/assets'
-import { CATEGORY_OPTIONS, getCategoryLabel } from '../../lib/catalog'
-
-const categoryOptions = CATEGORY_OPTIONS
+import ProductFormModal from './components/ProductFormModal'
+import ProductListView from './components/ProductListView'
+import ProductPreviewModal from './components/ProductPreviewModal'
+import ProductToolbar from './components/ProductToolbar'
 
 const ProductManager = () => {
   const PRODUCT_BUCKET = import.meta.env.VITE_SUPABASE_PRODUCT_BUCKET || 'product-images'
@@ -25,10 +25,8 @@ const ProductManager = () => {
   const [formError, setFormError] = useState(null)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState(null)
-  const [dragActive, setDragActive] = useState(false)
   const [viewMode, setViewMode] = useState('list')
   const [previewImage, setPreviewImage] = useState(null)
-  const fileInputRef = useRef(null)
 
   const isEditing = useMemo(() => Boolean(form.id), [form.id])
 
@@ -82,14 +80,6 @@ const ProductManager = () => {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
-  const createFilename = (file) => {
-    const name = file?.name || 'image'
-    const parts = name.split('.')
-    const ext = parts.length > 1 ? parts.pop().toLowerCase() : 'png'
-    const uuid = crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`
-    return `products/${uuid}.${ext}`
-  }
-
   const handleFileUpload = async (file) => {
     if (!file) return
     if (!file.type?.startsWith('image/')) {
@@ -139,23 +129,6 @@ const ProductManager = () => {
     } finally {
       setUploading(false)
     }
-  }
-
-  const handleDrop = (event) => {
-    event.preventDefault()
-    setDragActive(false)
-    const file = event.dataTransfer?.files?.[0]
-    handleFileUpload(file)
-  }
-
-  const handleDragOver = (event) => {
-    event.preventDefault()
-    setDragActive(true)
-  }
-
-  const handleDragLeave = (event) => {
-    event.preventDefault()
-    setDragActive(false)
   }
 
   const handleSubmit = async (event) => {
@@ -227,201 +200,31 @@ const ProductManager = () => {
 
   return (
     <div>
-      <div className="flex flex-wrap gap-4 items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold font-heading">상품 관리</h1>
-          <p className="text-sm text-gray-500 mt-1">리스트/그리드 보기로 전환할 수 있습니다.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center bg-white border border-gray-200 rounded-lg overflow-hidden">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`px-3 py-2 text-sm font-semibold ${
-                viewMode === 'list' ? 'bg-black text-white' : 'text-gray-500 hover:text-black'
-              }`}
-            >
-              리스트
-            </button>
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`px-3 py-2 text-sm font-semibold ${
-                viewMode === 'grid' ? 'bg-black text-white' : 'text-gray-500 hover:text-black'
-              }`}
-            >
-              그리드
-            </button>
-          </div>
-          <button
-            onClick={() => {
-              resetForm()
-              setShowForm(true)
-            }}
-            className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800"
-          >
-            + 상품 등록
-          </button>
-        </div>
-      </div>
+      <ProductToolbar
+        viewMode={viewMode}
+        onViewChange={setViewMode}
+        onCreate={() => {
+          resetForm()
+          setShowForm(true)
+        }}
+      />
 
-      {showForm && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4">
-          <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl p-8 relative">
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-black"
-            >
-              닫기
-            </button>
-            <h2 className="text-xl font-bold mb-6">{isEditing ? '상품 수정' : '상품 등록'}</h2>
+      <ProductFormModal
+        open={showForm}
+        onClose={() => setShowForm(false)}
+        isEditing={isEditing}
+        form={form}
+        onChange={handleChange}
+        onSubmit={handleSubmit}
+        onUploadFile={handleFileUpload}
+        uploading={uploading}
+        formError={formError}
+        uploadError={uploadError}
+        saving={saving}
+        onCancelEdit={resetForm}
+      />
 
-            <form onSubmit={handleSubmit}>
-              <div className="flex items-start justify-between gap-6 flex-wrap">
-                <div className="flex-1 min-w-[240px] space-y-4">
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700">상품명</label>
-                    <input
-                      value={form.name}
-                      onChange={handleChange('name')}
-                      placeholder="상품명을 입력하세요"
-                      className="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700">상품 설명</label>
-                    <textarea
-                      value={form.description}
-                      onChange={handleChange('description')}
-                      rows="3"
-                      placeholder="상품 설명을 입력하세요"
-                      className="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="w-full md:w-[320px] space-y-4">
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700">가격 (KRW)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={form.price_krw}
-                      onChange={handleChange('price_krw')}
-                      placeholder="가격을 입력하세요"
-                      className="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700">카테고리</label>
-                    <select
-                      value={form.category}
-                      onChange={handleChange('category')}
-                      className="mt-2 w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
-                    >
-                      {categoryOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold text-gray-700">상품 이미지</label>
-                    <div
-                      onDrop={handleDrop}
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      onClick={() => fileInputRef.current?.click()}
-                      className={`mt-2 w-full border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors ${
-                        dragActive ? 'border-black bg-gray-50' : 'border-gray-200'
-                      }`}
-                    >
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(event) => handleFileUpload(event.target.files?.[0])}
-                      />
-                      <p className="text-sm text-gray-600">
-                        {uploading ? '업로드 중...' : '드래그 앤 드롭 또는 클릭하여 업로드'}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        JPG/PNG/SVG 권장, Supabase Storage에 저장됩니다.
-                      </p>
-                    </div>
-                    <input
-                      value={form.image_url}
-                      onChange={handleChange('image_url')}
-                      placeholder="또는 이미지 URL 직접 입력"
-                      className="mt-3 w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
-                    />
-                    {form.image_url && (
-                      <img
-                        src={resolveAssetUrl(form.image_url)}
-                        alt="preview"
-                        className="mt-3 w-full h-36 rounded-xl object-cover bg-gray-100"
-                      />
-                    )}
-                  </div>
-                  <label className="flex items-center gap-2 text-sm text-gray-600">
-                    <input type="checkbox" checked={form.is_active} onChange={handleChange('is_active')} />
-                    판매 활성화
-                  </label>
-                </div>
-              </div>
-
-              {formError && (
-                <div className="mt-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">
-                  {formError}
-                </div>
-              )}
-              {uploadError && (
-                <div className="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">
-                  {uploadError}
-                </div>
-              )}
-
-              <div className="mt-6 flex items-center gap-3">
-                <button
-                  type="submit"
-                  disabled={saving || uploading}
-                  className="bg-black text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-900 disabled:opacity-60"
-                >
-                  {saving ? '저장 중...' : isEditing ? '상품 수정' : '상품 등록'}
-                </button>
-                {isEditing && (
-                  <button
-                    type="button"
-                    onClick={resetForm}
-                    className="px-4 py-3 rounded-xl border border-gray-200 text-sm font-semibold hover:border-black"
-                  >
-                    수정 취소
-                  </button>
-                )}
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {previewImage && (
-        <div
-          className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-6"
-          onClick={() => setPreviewImage(null)}
-        >
-          <div className="bg-white rounded-2xl p-4 shadow-2xl max-w-3xl w-full">
-            <img src={previewImage} alt="preview" className="w-full max-h-[70vh] object-contain rounded-xl" />
-            <button
-              type="button"
-              onClick={() => setPreviewImage(null)}
-              className="mt-4 w-full px-4 py-2 rounded-xl border border-gray-200 text-sm font-semibold hover:border-black"
-            >
-              닫기
-            </button>
-          </div>
-        </div>
-      )}
+      <ProductPreviewModal image={previewImage} onClose={() => setPreviewImage(null)} />
 
       {status.error && (
         <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl p-3">
@@ -429,121 +232,13 @@ const ProductManager = () => {
         </div>
       )}
 
-      {viewMode === 'list' ? (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-gray-50 border-b border-gray-100">
-              <tr>
-                <th className="p-4 font-medium text-gray-500">상품 정보</th>
-                <th className="p-4 font-medium text-gray-500">카테고리</th>
-                <th className="p-4 font-medium text-gray-500">가격</th>
-                <th className="p-4 font-medium text-gray-500">상태</th>
-                <th className="p-4 font-medium text-gray-500">재고</th>
-                <th className="p-4 font-medium text-gray-500">관리</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {status.loading && (
-                <tr>
-                  <td colSpan="6" className="p-6 text-center text-gray-400">
-                    상품 정보를 불러오는 중...
-                  </td>
-                </tr>
-              )}
-              {!status.loading && products.length === 0 && (
-                <tr>
-                  <td colSpan="6" className="p-6 text-center text-gray-400">
-                    등록된 상품이 없습니다.
-                  </td>
-                </tr>
-              )}
-              {!status.loading &&
-                products.map((product) => (
-                  <tr key={product.id}>
-                    <td className="p-4 flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setPreviewImage(resolveAssetUrl(product.image_url))}
-                        className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100"
-                      >
-                        <img
-                          src={resolveAssetUrl(product.image_url)}
-                          alt={product.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                      <div>
-                        <p className="font-medium">{product.name}</p>
-                        <p className="text-xs text-gray-400 line-clamp-1">{product.description}</p>
-                      </div>
-                    </td>
-                    <td className="p-4 text-gray-500">{getCategoryLabel(product.category)}</td>
-                    <td className="p-4">₩{product.price_krw.toLocaleString()}</td>
-                    <td className="p-4">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          product.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-                        }`}
-                      >
-                        {product.is_active ? '판매중' : '비활성'}
-                      </span>
-                    </td>
-                    <td className="p-4 text-gray-400">-</td>
-                    <td className="p-4">
-                      <button
-                        onClick={() => handleEdit(product)}
-                        className="text-gray-400 hover:text-black"
-                      >
-                        수정
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {status.loading && (
-            <div className="col-span-full text-center text-gray-400 py-12">상품 정보를 불러오는 중...</div>
-          )}
-          {!status.loading && products.length === 0 && (
-            <div className="col-span-full text-center text-gray-400 py-12">등록된 상품이 없습니다.</div>
-          )}
-          {!status.loading &&
-            products.map((product) => (
-              <div key={product.id} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-                <button
-                  type="button"
-                  onClick={() => setPreviewImage(resolveAssetUrl(product.image_url))}
-                  className="w-full h-44 rounded-xl overflow-hidden bg-gray-100"
-                >
-                  <img
-                    src={resolveAssetUrl(product.image_url)}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-                <div className="mt-4">
-                  <p className="text-xs uppercase tracking-widest text-gray-400">
-                    {getCategoryLabel(product.category)}
-                  </p>
-                  <h3 className="text-lg font-bold mt-1">{product.name}</h3>
-                  <p className="text-sm text-gray-500 line-clamp-2 mt-2">{product.description}</p>
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="text-lg font-semibold">₩{product.price_krw.toLocaleString()}</span>
-                    <button
-                      onClick={() => handleEdit(product)}
-                      className="text-sm font-semibold text-gray-500 hover:text-black"
-                    >
-                      수정
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-        </div>
-      )}
+      <ProductListView
+        viewMode={viewMode}
+        products={products}
+        loading={status.loading}
+        onEdit={handleEdit}
+        onPreview={(image) => setPreviewImage(image)}
+      />
     </div>
   )
 }
