@@ -23,6 +23,13 @@ The server expects Supabase service role credentials in `.env` and exposes:
 - `POST /api/quotes`
 - `POST /api/orders`
 
+## Supabase setup
+
+1) Create a Supabase project.
+2) Run `supabase/schema.sql` in the SQL editor.
+3) Seed one active product with `supabase/seed.sql`.
+4) Copy the project URL and service role key into `server/.env`.
+
 ## Notes
 
 - Database schema lives in `supabase/schema.sql`.
