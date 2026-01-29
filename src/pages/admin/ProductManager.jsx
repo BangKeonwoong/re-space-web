@@ -2,20 +2,9 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { API_BASE_URL, apiRequest } from '../../lib/api'
 import { useAdminAuth } from '../../contexts/AdminAuthContext'
 import { resolveAssetUrl } from '../../lib/assets'
+import { CATEGORY_OPTIONS, getCategoryLabel } from '../../lib/catalog'
 
-const categoryLabels = {
-  new: '신상품',
-  'premium-refurb': '프리미엄 리퍼브',
-  refurb: '리퍼브',
-  vintage: '빈티지',
-}
-
-const categoryOptions = [
-  { value: 'new', label: '신상품' },
-  { value: 'premium-refurb', label: '프리미엄 리퍼브' },
-  { value: 'refurb', label: '리퍼브' },
-  { value: 'vintage', label: '빈티지' },
-]
+const categoryOptions = CATEGORY_OPTIONS
 
 const ProductManager = () => {
   const PRODUCT_BUCKET = import.meta.env.VITE_SUPABASE_PRODUCT_BUCKET || 'product-images'
@@ -488,7 +477,7 @@ const ProductManager = () => {
                         <p className="text-xs text-gray-400 line-clamp-1">{product.description}</p>
                       </div>
                     </td>
-                    <td className="p-4 text-gray-500">{categoryLabels[product.category] || product.category}</td>
+                    <td className="p-4 text-gray-500">{getCategoryLabel(product.category)}</td>
                     <td className="p-4">₩{product.price_krw.toLocaleString()}</td>
                     <td className="p-4">
                       <span
@@ -537,7 +526,7 @@ const ProductManager = () => {
                 </button>
                 <div className="mt-4">
                   <p className="text-xs uppercase tracking-widest text-gray-400">
-                    {categoryLabels[product.category] || product.category}
+                    {getCategoryLabel(product.category)}
                   </p>
                   <h3 className="text-lg font-bold mt-1">{product.name}</h3>
                   <p className="text-sm text-gray-500 line-clamp-2 mt-2">{product.description}</p>

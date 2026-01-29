@@ -3,14 +3,7 @@ import { Link } from 'react-router-dom'
 import { apiRequest } from '../lib/api'
 import { useCart } from '../contexts/CartContext'
 import { resolveAssetUrl } from '../lib/assets'
-
-const categories = [
-  { key: 'all', label: '전체' },
-  { key: 'new', label: '신상품' },
-  { key: 'premium-refurb', label: '프리미엄 리퍼브' },
-  { key: 'refurb', label: '리퍼브' },
-  { key: 'vintage', label: '빈티지' },
-]
+import { CATALOG_CATEGORIES, getCategoryLabel } from '../lib/catalog'
 
 const ProductCatalog = ({ title, description, initialCategory = 'all' }) => {
   const { addItem } = useCart()
@@ -19,17 +12,8 @@ const ProductCatalog = ({ title, description, initialCategory = 'all' }) => {
   const [products, setProducts] = useState([])
   const [error, setError] = useState(null)
 
-  const categoryMap = useMemo(
-    () =>
-      categories.reduce((acc, item) => {
-        acc[item.key] = item.label
-        return acc
-      }, {}),
-    [],
-  )
-
   const categoryLabel = useMemo(
-    () => categories.find((item) => item.key === category)?.label || '전체',
+    () => getCategoryLabel(category) || '전체',
     [category],
   )
 
@@ -63,7 +47,7 @@ const ProductCatalog = ({ title, description, initialCategory = 'all' }) => {
           {description && <p className="text-gray-500 max-w-2xl">{description}</p>}
         </div>
         <div className="flex flex-wrap gap-3">
-          {categories.map((item) => (
+          {CATALOG_CATEGORIES.map((item) => (
             <button
               key={item.key}
               onClick={() => setCategory(item.key)}
@@ -115,7 +99,7 @@ const ProductCatalog = ({ title, description, initialCategory = 'all' }) => {
                   />
                 </Link>
                 <p className="text-xs uppercase tracking-widest text-gray-400">
-                  {categoryMap[product.category] || product.category}
+                  {getCategoryLabel(product.category)}
                 </p>
                 <Link to={`/products/${product.id}`} className="block">
                   <h3 className="text-xl font-bold mt-2 mb-2 hover:text-lime-600 transition-colors">
