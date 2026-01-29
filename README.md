@@ -1,3 +1,33 @@
+# Re:Space WEB
+
+## Frontend
+
+This project uses React + Vite for the UI.
+
+## Backend (Express)
+
+The API server lives in `server/`.
+
+Quick start:
+
+```bash
+cd server
+cp .env.example .env
+npm install
+npm run dev
+```
+
+The server expects Supabase service role credentials in `.env` and exposes:
+
+- `GET /api/health`
+- `POST /api/quotes`
+- `POST /api/orders`
+
+## Notes
+
+- Database schema lives in `supabase/schema.sql`.
+- For production, use a proper server host (Vercel/Render/Railway) instead of GitHub Pages.
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
