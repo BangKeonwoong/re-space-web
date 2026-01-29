@@ -13,10 +13,11 @@ import Checkout from './pages/Checkout';
 import OrderLookup from './pages/OrderLookup';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
-import AdminLayout from './layouts/AdminLayout';
+import AdminGuard from './components/AdminGuard';
 import Dashboard from './pages/admin/Dashboard';
 import ProductManager from './pages/admin/ProductManager';
 import CustomerManager from './pages/admin/CustomerManager';
+import AdminLogin from './pages/admin/AdminLogin';
 
 const AgentButton = () => {
   return (
@@ -46,9 +47,10 @@ function App() {
         <Route path="/orders" element={<OrderLookup />} />
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
 
         {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route path="/admin" element={<AdminGuard />}>
           <Route index element={<Dashboard />} />
           <Route path="products" element={<ProductManager />} />
           <Route path="customers" element={<CustomerManager />} />

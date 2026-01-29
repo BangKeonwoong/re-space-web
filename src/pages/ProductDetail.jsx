@@ -45,6 +45,8 @@ const ProductDetail = () => {
     )
   }
 
+  const checkoutLink = `/checkout?productId=${encodeURIComponent(product.id)}`
+
   return (
     <div className="pt-32 pb-20 px-6 max-w-6xl mx-auto">
       <div className="grid md:grid-cols-2 gap-10">
@@ -72,7 +74,7 @@ const ProductDetail = () => {
               장바구니 담기
             </button>
             <Link
-              to="/checkout"
+              to={checkoutLink}
               className="px-6 py-3 border border-gray-200 rounded-full font-semibold hover:border-black transition-colors"
             >
               바로 구매

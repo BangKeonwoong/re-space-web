@@ -71,11 +71,28 @@ const quoteSchema = z.object({
 
 const orderSchema = z.object({
   productId: z.string().uuid().optional(),
-  quantity: z.preprocess(toNumber, z.number().int().min(1).max(999)),
+  quantity: z.preprocess(toNumber, z.number().int().min(1).max(999)).optional(),
   customerName: z.string().min(1).max(80),
   customerEmail: z.string().email(),
   customerPhone: z.string().max(30).optional().or(z.literal('')),
   userId: z.string().uuid().optional(),
+  items: z
+    .array(
+      z.object({
+        productId: z.string().uuid(),
+        quantity: z.preprocess(toNumber, z.number().int().min(1).max(999)),
+      }),
+    )
+    .optional(),
+}).superRefine((data, ctx) => {
+  if (!data.items || data.items.length === 0) {
+    if (!data.productId) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['productId'], message: '상품이 필요합니다.' })
+    }
+    if (!data.quantity) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['quantity'], message: '수량이 필요합니다.' })
+    }
+  }
 })
 
 const orderLookupSchema = z.object({
@@ -290,7 +307,7 @@ app.get('/api/products', async (req, res) => {
   const category = typeof req.query.category === 'string' ? req.query.category.trim() : ''
   let query = supabase
     .from('products')
-    .select('id, name, description, price_krw, category, is_active')
+    .select('id, name, description, price_krw, category, image_url, is_active')
     .eq('is_active', true)
     .order('created_at', { ascending: false })
 
@@ -344,7 +361,7 @@ app.post('/api/orders/lookup', async (req, res) => {
   const { data: order, error } = await supabase
     .from('orders')
     .select(
-      'id, order_number, status, total_price_krw, currency, created_at, customer_name, customer_email, product:products(name), payments:payments(status, provider, amount, created_at)',
+      'id, order_number, status, total_price_krw, currency, created_at, customer_name, customer_email, product:products(name), items:order_items(quantity, unit_price_krw, total_price_krw, product:products(name, image_url)), payments:payments(status, provider, amount, created_at)',
     )
     .eq('order_number', orderNumber)
     .eq('customer_email', email)
@@ -396,27 +413,69 @@ app.post('/api/orders', async (req, res) => {
     return res.status(500).json({ error: 'SERVER_NOT_READY' })
   }
 
-  const { productId, quantity, customerName, customerEmail, customerPhone, userId } = parsed.data
-  const product = await getActiveProduct(productId)
+  const { productId, quantity, customerName, customerEmail, customerPhone, userId, items } = parsed.data
 
-  if (!product) {
-    return res.status(404).json({ error: 'PRODUCT_NOT_FOUND' })
+  let orderItems = []
+
+  if (items && items.length > 0) {
+    const ids = items.map((item) => item.productId)
+    const { data: products, error: productError } = await supabase
+      .from('products')
+      .select('id, name, price_krw, is_active')
+      .in('id', ids)
+      .eq('is_active', true)
+
+    if (productError) {
+      return res.status(500).json({ error: 'DB_ERROR', details: productError.message })
+    }
+
+    if (!products || products.length !== ids.length) {
+      return res.status(404).json({ error: 'PRODUCT_NOT_FOUND' })
+    }
+
+    orderItems = items.map((item) => {
+      const product = products.find((p) => p.id === item.productId)
+      const unit = product.price_krw
+      return {
+        product_id: product.id,
+        quantity: item.quantity,
+        unit_price_krw: unit,
+        total_price_krw: unit * item.quantity,
+      }
+    })
+  } else {
+    const product = await getActiveProduct(productId)
+
+    if (!product) {
+      return res.status(404).json({ error: 'PRODUCT_NOT_FOUND' })
+    }
+
+    orderItems = [
+      {
+        product_id: product.id,
+        quantity,
+        unit_price_krw: product.price_krw,
+        total_price_krw: product.price_krw * quantity,
+      },
+    ]
   }
 
-  const unitPrice = product.price_krw
-  const totalPrice = unitPrice * quantity
+  const totalPrice = orderItems.reduce((sum, item) => sum + item.total_price_krw, 0)
+  const totalQuantity = orderItems.reduce((sum, item) => sum + item.quantity, 0)
+  const isCart = orderItems.length > 1
   const guestToken = userId ? null : crypto.randomUUID()
 
   const { data, error } = await supabase
     .from('orders')
     .insert({
       order_number: createOrderNumber(),
-      product_id: product.id,
-      quantity,
-      unit_price_krw: unitPrice,
+      product_id: isCart ? null : orderItems[0].product_id,
+      quantity: isCart ? totalQuantity : orderItems[0].quantity,
+      unit_price_krw: isCart ? totalPrice : orderItems[0].unit_price_krw,
       total_price_krw: totalPrice,
       currency: 'KRW',
       status: 'pending',
+      is_cart: isCart,
       customer_name: customerName,
       customer_email: customerEmail,
       customer_phone: customerPhone || null,
@@ -428,6 +487,17 @@ app.post('/api/orders', async (req, res) => {
 
   if (error) {
     return res.status(500).json({ error: 'DB_ERROR', details: error.message })
+  }
+
+  const orderId = data.id
+  const itemsPayload = orderItems.map((item) => ({
+    order_id: orderId,
+    ...item,
+  }))
+  const { error: itemsError } = await supabase.from('order_items').insert(itemsPayload)
+
+  if (itemsError) {
+    return res.status(500).json({ error: 'DB_ERROR', details: itemsError.message })
   }
 
   return res.status(201).json({ order: data })
@@ -449,7 +519,7 @@ app.post('/api/payments/portone/prepare', async (req, res) => {
 
   const { data: order, error: orderError } = await supabase
     .from('orders')
-    .select('id, order_number, total_price_krw, status, product:products(name), customer_name, customer_email')
+    .select('id, order_number, total_price_krw, status, is_cart, product:products(name), items:order_items(id), customer_name, customer_email')
     .eq('id', orderId)
     .single()
 
@@ -462,9 +532,11 @@ app.post('/api/payments/portone/prepare', async (req, res) => {
   }
 
   const paymentId = `payment-${crypto.randomUUID()}`
-  const orderName = order.product?.name
-    ? `${order.product.name} (${order.order_number})`
-    : `Re:Space Order ${order.order_number}`
+  const orderName = order.is_cart
+    ? `Re:Space Cart (${order.items?.length || 0} items)`
+    : order.product?.name
+      ? `${order.product.name} (${order.order_number})`
+      : `Re:Space Order ${order.order_number}`
 
   const { error: paymentError } = await supabase
     .from('payments')

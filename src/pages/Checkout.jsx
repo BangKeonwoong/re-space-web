@@ -1,10 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import * as PortOne from '@portone/browser-sdk/v2'
+import { useLocation } from 'react-router-dom'
 import { apiRequest } from '../lib/api'
+import { useCart } from '../contexts/CartContext'
 
 const Checkout = () => {
+  const { items, totalPrice: cartTotal, clear } = useCart()
+  const location = useLocation()
   const [product, setProduct] = useState(null)
   const [loadingProduct, setLoadingProduct] = useState(true)
+  const [productError, setProductError] = useState(null)
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -18,14 +23,37 @@ const Checkout = () => {
     success: null,
   })
 
+  const hasCart = items.length > 0
+  const productId = useMemo(() => {
+    const value = new URLSearchParams(location.search).get('productId')
+    return value ? value.trim() : ''
+  }, [location.search])
+
   useEffect(() => {
     let mounted = true
-    apiRequest('/api/products/active')
+    if (hasCart) {
+      setProduct(null)
+      setLoadingProduct(false)
+      setProductError(null)
+      return () => {
+        mounted = false
+      }
+    }
+
+    setLoadingProduct(true)
+    setProductError(null)
+    const endpoint = productId ? `/api/products/${productId}` : '/api/products/active'
+    apiRequest(endpoint)
       .then((data) => {
         if (mounted) setProduct(data.product)
       })
       .catch(() => {
-        if (mounted) setProduct(null)
+        if (mounted) {
+          setProduct(null)
+          setProductError(
+            productId ? '선택한 상품을 찾을 수 없습니다.' : '상품 정보를 불러오지 못했습니다.',
+          )
+        }
       })
       .finally(() => {
         if (mounted) setLoadingProduct(false)
@@ -33,12 +61,13 @@ const Checkout = () => {
     return () => {
       mounted = false
     }
-  }, [])
+  }, [hasCart, productId])
 
   const totalPrice = useMemo(() => {
+    if (hasCart) return cartTotal
     if (!product) return 0
     return product.price_krw * Number(form.quantity || 1)
-  }, [product, form.quantity])
+  }, [hasCart, cartTotal, product, form.quantity])
 
   const handleChange = (field) => (event) => {
     const value = field === 'quantity' ? Number(event.target.value) : event.target.value
@@ -53,18 +82,29 @@ const Checkout = () => {
       if (!form.name.trim() || !form.email.trim()) {
         throw new Error('이름과 이메일을 입력해주세요.')
       }
-      if (!form.quantity || Number(form.quantity) < 1) {
+      if (!hasCart && (!form.quantity || Number(form.quantity) < 1)) {
         throw new Error('수량은 1개 이상이어야 합니다.')
+      }
+      if (!hasCart && !product?.id) {
+        throw new Error('상품 정보를 불러오지 못했습니다.')
       }
 
       const orderPayload = {
-        quantity: Number(form.quantity || 1),
         customerName: form.name,
         customerEmail: form.email,
         customerPhone: form.phone,
       }
-      if (product?.id) {
+      if (hasCart) {
+        if (items.length === 0) {
+          throw new Error('장바구니가 비어있습니다.')
+        }
+        orderPayload.items = items.map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+        }))
+      } else if (product?.id) {
         orderPayload.productId = product.id
+        orderPayload.quantity = Number(form.quantity || 1)
       }
 
       const orderResult = await apiRequest('/api/orders', {
@@ -105,6 +145,9 @@ const Checkout = () => {
         error: null,
         success: `주문이 완료되었습니다. 주문번호: ${orderResult.order.order_number}`,
       })
+      if (hasCart) {
+        clear()
+      }
     } catch (error) {
       const detailError = error?.details?.fieldErrors
         ? Object.values(error.details.fieldErrors).flat().filter(Boolean)[0]
@@ -123,30 +166,70 @@ const Checkout = () => {
         <div className="flex-1">
           <h1 className="text-4xl font-bold mb-4 font-heading">구매하기</h1>
           <p className="text-gray-500 mb-8">
-            단일 상품 구매를 위한 간단한 결제 흐름입니다. 카드/계좌이체/가상계좌를 선택할 수 있습니다.
+            {hasCart
+              ? '장바구니에 담긴 상품을 확인하고 결제를 진행하세요.'
+              : '단일 상품 구매를 위한 간단한 결제 흐름입니다. 카드/계좌이체/가상계좌를 선택할 수 있습니다.'}
           </p>
 
           <div className="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <p className="text-xs uppercase tracking-widest text-gray-400">Product</p>
-                <h2 className="text-2xl font-bold mt-2">
-                  {loadingProduct ? '상품 정보를 불러오는 중...' : product?.name || 'Re:Space Single Product'}
-                </h2>
+            {hasCart ? (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-gray-400">Cart Items</p>
+                    <h2 className="text-2xl font-bold mt-2">장바구니 상품 {items.length}개</h2>
+                  </div>
+                  <span className="text-sm px-3 py-1 rounded-full bg-lime-100 text-lime-800 font-semibold">
+                    Cart
+                  </span>
+                </div>
+                <div className="space-y-4">
+                  {items.map((item) => (
+                    <div key={item.id} className="flex items-center gap-4">
+                      <img
+                        src={item.image_url || '/products/placeholder.svg'}
+                        alt={item.name}
+                        className="w-16 h-16 rounded-xl object-cover bg-gray-100"
+                      />
+                      <div className="flex-1">
+                        <p className="font-semibold">{item.name}</p>
+                        <p className="text-sm text-gray-500">
+                          수량 {item.quantity} · ₩{(item.price_krw * item.quantity).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <span className="text-sm px-3 py-1 rounded-full bg-lime-100 text-lime-800 font-semibold">
-                Single Item
-              </span>
-            </div>
-            <p className="text-gray-500 mb-6">
-              {product?.description || '프리미엄 리퍼브 단일 상품입니다. 상태 확인 후 결제하세요.'}
-            </p>
-            <div className="flex items-center justify-between border-t border-gray-100 pt-6">
-              <span className="text-gray-500 font-medium">단가</span>
-              <span className="text-xl font-bold">
-                {product ? `₩${product.price_krw.toLocaleString()}` : '₩0'}
-              </span>
-            </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-gray-400">Product</p>
+                    <h2 className="text-2xl font-bold mt-2">
+                      {loadingProduct ? '상품 정보를 불러오는 중...' : product?.name || 'Re:Space Single Product'}
+                    </h2>
+                  </div>
+                  <span className="text-sm px-3 py-1 rounded-full bg-lime-100 text-lime-800 font-semibold">
+                    Single Item
+                  </span>
+                </div>
+                {productError && (
+                  <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
+                    {productError}
+                  </div>
+                )}
+                <p className="text-gray-500 mb-6">
+                  {product?.description || '프리미엄 리퍼브 단일 상품입니다. 상태 확인 후 결제하세요.'}
+                </p>
+                <div className="flex items-center justify-between border-t border-gray-100 pt-6">
+                  <span className="text-gray-500 font-medium">단가</span>
+                  <span className="text-xl font-bold">
+                    {product ? `₩${product.price_krw.toLocaleString()}` : '₩0'}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -177,13 +260,15 @@ const Checkout = () => {
               placeholder="연락처 (선택)"
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
             />
-            <input
-              type="number"
-              min="1"
-              value={form.quantity}
-              onChange={handleChange('quantity')}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
-            />
+            {!hasCart && (
+              <input
+                type="number"
+                min="1"
+                value={form.quantity}
+                onChange={handleChange('quantity')}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
+              />
+            )}
 
             <select
               value={form.payMethod}

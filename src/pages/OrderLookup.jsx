@@ -10,6 +10,8 @@ const statusLabel = {
   failed: '실패',
 }
 
+const currencyLabel = (value) => (typeof value === 'number' ? value.toLocaleString() : value)
+
 const OrderLookup = () => {
   const [form, setForm] = useState({ orderNumber: '', email: '' })
   const [status, setStatus] = useState({ loading: false, error: null })
@@ -116,6 +118,29 @@ const OrderLookup = () => {
                   </span>
                 )}
               </div>
+
+              {order.items?.length > 0 && (
+                <div className="border-t border-gray-100 pt-4 space-y-3">
+                  <p className="font-semibold text-gray-700">주문 상품</p>
+                  <div className="space-y-3">
+                    {order.items.map((item, index) => (
+                      <div key={`${item.product?.name || 'item'}-${index}`} className="flex items-center gap-3">
+                        <img
+                          src={item.product?.image_url || '/products/placeholder.svg'}
+                          alt={item.product?.name || 'product'}
+                          className="w-12 h-12 rounded-lg object-cover bg-gray-100"
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold">{item.product?.name || '상품'}</p>
+                          <p className="text-xs text-gray-500">
+                            수량 {item.quantity} · ₩{currencyLabel(item.total_price_krw)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {order.payments?.length > 0 && (
                 <div className="border-t border-gray-100 pt-4 space-y-2 text-sm text-gray-500">

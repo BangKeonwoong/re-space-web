@@ -34,6 +34,7 @@ create table if not exists public.orders (
   total_price_krw integer not null check (total_price_krw >= 0),
   currency text not null default 'KRW',
   status text not null default 'pending',
+  is_cart boolean not null default false,
   customer_name text not null,
   customer_email text not null,
   customer_phone text,
@@ -41,6 +42,16 @@ create table if not exists public.orders (
   guest_token uuid,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
+);
+
+create table if not exists public.order_items (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid not null references public.orders(id) on delete cascade,
+  product_id uuid not null references public.products(id) on delete restrict,
+  quantity integer not null default 1 check (quantity > 0),
+  unit_price_krw integer not null check (unit_price_krw >= 0),
+  total_price_krw integer not null check (total_price_krw >= 0),
+  created_at timestamptz not null default now()
 );
 
 create table if not exists public.payments (
@@ -89,6 +100,7 @@ create trigger set_payments_updated_at
 alter table public.products enable row level security;
 alter table public.quotes enable row level security;
 alter table public.orders enable row level security;
+alter table public.order_items enable row level security;
 alter table public.payments enable row level security;
 alter table public.admin_users enable row level security;
 
@@ -100,6 +112,14 @@ create policy "quotes view own" on public.quotes
 
 create policy "orders view own" on public.orders
   for select using (auth.uid() = user_id);
+
+create policy "order items view via orders" on public.order_items
+  for select using (
+    exists (
+      select 1 from public.orders o
+      where o.id = order_items.order_id and o.user_id = auth.uid()
+    )
+  );
 
 create policy "payments view via order" on public.payments
   for select using (

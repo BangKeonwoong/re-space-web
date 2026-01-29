@@ -5,7 +5,10 @@
 This project uses React + Vite for the UI.
 
 Frontend env:
-- Copy `.env.example` to `.env` and set `VITE_API_BASE_URL` to your backend URL.
+- Copy `.env.example` to `.env` and set:
+  - `VITE_API_BASE_URL` to your backend URL
+  - `VITE_SUPABASE_URL` to your Supabase project URL
+  - `VITE_SUPABASE_ANON_KEY` to your Supabase anon key
 
 ## Backend (Express)
 
@@ -40,6 +43,9 @@ The server expects Supabase service role credentials in `.env` and exposes:
 3) Seed one active product with `supabase/seed.sql`.
 4) Apply migrations if you already created tables:
    - `supabase/migrations/20260129_add_product_category.sql`
+   - `supabase/migrations/20260129_add_product_image_url.sql`
+   - `supabase/migrations/20260129_add_order_is_cart.sql`
+   - `supabase/migrations/20260129_add_order_items.sql`
 5) Copy the project URL and service role key into `server/.env`.
 6) Add PortOne credentials to `server/.env`:
    - `PORTONE_API_SECRET`
@@ -51,6 +57,19 @@ The server expects Supabase service role credentials in `.env` and exposes:
 
 - Database schema lives in `supabase/schema.sql`.
 - For production, use a proper server host (Vercel/Render/Railway) instead of GitHub Pages.
+
+## Admin login
+
+- Admin UI: `/admin`
+- Admin login UI: `/admin/login`
+- Supabase Auth로 로그인합니다.
+- 관리자 권한은 `admin_users` 테이블에 `user_id`를 등록해야 활성화됩니다.
+
+예시 SQL (Supabase SQL editor):
+```sql
+insert into public.admin_users (user_id)
+values ('<AUTH_USER_ID>');
+```
 
 ## Backend deploy (Render)
 
