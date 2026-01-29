@@ -35,25 +35,43 @@ export const AdminAuthProvider = ({ children }) => {
       }
     }
 
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (!mounted) return
-      setSession(data.session)
-      const adminState = await getAdminStatus(data.session?.user)
-      if (!mounted) return
-      setIsAdmin(adminState.isAdmin)
-      setError(adminState.error ? '관리자 권한 확인에 실패했습니다.' : null)
-      setLoading(false)
-    })
+    supabase.auth
+      .getSession()
+      .then(async ({ data, error }) => {
+        if (!mounted) return
+        if (error) {
+          setError(`세션 확인 실패: ${error.message}`)
+          setLoading(false)
+          return
+        }
+        setSession(data.session)
+        const adminState = await getAdminStatus(data.session?.user)
+        if (!mounted) return
+        setIsAdmin(adminState.isAdmin)
+        setError(adminState.error ? '관리자 권한 확인에 실패했습니다.' : null)
+        setLoading(false)
+      })
+      .catch((error) => {
+        if (!mounted) return
+        setError(`세션 확인 실패: ${error?.message || '알 수 없는 오류'}`)
+        setLoading(false)
+      })
 
     const { data } = supabase.auth.onAuthStateChange(async (_event, nextSession) => {
       if (!mounted) return
       setLoading(true)
       setSession(nextSession)
-      const adminState = await getAdminStatus(nextSession?.user)
-      if (!mounted) return
-      setIsAdmin(adminState.isAdmin)
-      setError(adminState.error ? '관리자 권한 확인에 실패했습니다.' : null)
-      setLoading(false)
+      try {
+        const adminState = await getAdminStatus(nextSession?.user)
+        if (!mounted) return
+        setIsAdmin(adminState.isAdmin)
+        setError(adminState.error ? '관리자 권한 확인에 실패했습니다.' : null)
+        setLoading(false)
+      } catch (error) {
+        if (!mounted) return
+        setError(`관리자 권한 확인 실패: ${error?.message || '알 수 없는 오류'}`)
+        setLoading(false)
+      }
     })
 
     return () => {
