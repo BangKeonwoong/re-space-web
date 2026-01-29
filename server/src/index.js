@@ -55,17 +55,23 @@ const supabase = supabaseUrl && supabaseServiceKey
   : null
 const paymentClient = portoneApiSecret ? PaymentClient({ secret: portoneApiSecret }) : null
 
+const toNumber = (value) => {
+  if (value === '' || value === null || value === undefined) return undefined
+  const parsed = Number(value)
+  return Number.isNaN(parsed) ? value : parsed
+}
+
 const quoteSchema = z.object({
   name: z.string().min(1).max(80),
   email: z.string().email(),
   phone: z.string().max(30).optional().or(z.literal('')),
-  quantity: z.number().int().min(1).max(999).optional().default(1),
+  quantity: z.preprocess(toNumber, z.number().int().min(1).max(999)).optional().default(1),
   message: z.string().max(2000).optional().or(z.literal('')),
 })
 
 const orderSchema = z.object({
   productId: z.string().uuid().optional(),
-  quantity: z.number().int().min(1).max(999),
+  quantity: z.preprocess(toNumber, z.number().int().min(1).max(999)),
   customerName: z.string().min(1).max(80),
   customerEmail: z.string().email(),
   customerPhone: z.string().max(30).optional().or(z.literal('')),

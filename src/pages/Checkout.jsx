@@ -50,6 +50,13 @@ const Checkout = () => {
     setStatus({ loading: true, error: null, success: null })
 
     try {
+      if (!form.name.trim() || !form.email.trim()) {
+        throw new Error('이름과 이메일을 입력해주세요.')
+      }
+      if (!form.quantity || Number(form.quantity) < 1) {
+        throw new Error('수량은 1개 이상이어야 합니다.')
+      }
+
       const orderPayload = {
         quantity: Number(form.quantity || 1),
         customerName: form.name,
@@ -99,9 +106,12 @@ const Checkout = () => {
         success: `주문이 완료되었습니다. 주문번호: ${orderResult.order.order_number}`,
       })
     } catch (error) {
+      const detailError = error?.details?.fieldErrors
+        ? Object.values(error.details.fieldErrors).flat().filter(Boolean)[0]
+        : null
       setStatus({
         loading: false,
-        error: error.message || '결제 처리 중 오류가 발생했습니다.',
+        error: detailError || error.message || '결제 처리 중 오류가 발생했습니다.',
         success: null,
       })
     }

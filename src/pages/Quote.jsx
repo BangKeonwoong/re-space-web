@@ -20,6 +20,9 @@ const Quote = () => {
         setStatus({ loading: true, error: null, success: null });
 
         try {
+            if (!form.name.trim() || !form.email.trim()) {
+                throw new Error('이름과 이메일을 입력해주세요.');
+            }
             await apiRequest('/api/quotes', {
                 method: 'POST',
                 body: JSON.stringify({
@@ -32,9 +35,12 @@ const Quote = () => {
             setStatus({ loading: false, error: null, success: '견적 요청이 접수되었습니다. 곧 연락드리겠습니다.' });
             setForm({ name: '', email: '', phone: '', message: '' });
         } catch (error) {
+            const detailError = error?.details?.fieldErrors
+                ? Object.values(error.details.fieldErrors).flat().filter(Boolean)[0]
+                : null;
             setStatus({
                 loading: false,
-                error: error.message || '견적 요청에 실패했습니다.',
+                error: detailError || error.message || '견적 요청에 실패했습니다.',
                 success: null,
             });
         }
