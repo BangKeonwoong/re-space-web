@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiRequest } from '../lib/api'
 import { useCart } from '../contexts/CartContext'
+import { resolveAssetUrl } from '../lib/assets'
 
 const categories = [
   { key: 'all', label: '전체' },
@@ -108,7 +109,7 @@ const ProductCatalog = ({ title, description, initialCategory = 'all' }) => {
               <div key={product.id} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
                 <Link to={`/products/${product.id}`} className="block mb-5">
                   <img
-                    src={product.image_url || '/products/placeholder.svg'}
+                    src={resolveAssetUrl(product.image_url)}
                     alt={product.name}
                     className="h-44 w-full object-cover rounded-xl"
                   />

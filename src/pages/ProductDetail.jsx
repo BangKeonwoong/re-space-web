@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { apiRequest } from '../lib/api'
 import { useCart } from '../contexts/CartContext'
+import { resolveAssetUrl } from '../lib/assets'
 
 const ProductDetail = () => {
   const { id } = useParams()
@@ -52,7 +53,7 @@ const ProductDetail = () => {
       <div className="grid md:grid-cols-2 gap-10">
         <div className="bg-gray-50 rounded-3xl p-8">
           <img
-            src={product.image_url || '/products/placeholder.svg'}
+            src={resolveAssetUrl(product.image_url)}
             alt={product.name}
             className="w-full h-72 object-cover rounded-2xl"
           />

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { apiRequest } from '../../lib/api'
 import { useAdminAuth } from '../../contexts/AdminAuthContext'
+import { resolveAssetUrl } from '../../lib/assets'
 
 const categoryLabels = {
   new: '신상품',
@@ -310,7 +311,7 @@ const ProductManager = () => {
                 <tr key={product.id}>
                   <td className="p-4 flex items-center gap-3">
                     <img
-                      src={product.image_url || '/products/placeholder.svg'}
+                      src={resolveAssetUrl(product.image_url)}
                       alt={product.name}
                       className="w-12 h-12 rounded-lg object-cover bg-gray-100"
                     />

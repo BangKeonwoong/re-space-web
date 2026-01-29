@@ -3,6 +3,7 @@ import * as PortOne from '@portone/browser-sdk/v2'
 import { useLocation } from 'react-router-dom'
 import { apiRequest } from '../lib/api'
 import { useCart } from '../contexts/CartContext'
+import { resolveAssetUrl } from '../lib/assets'
 
 const Checkout = () => {
   const { items, totalPrice: cartTotal, clear } = useCart()
@@ -187,7 +188,7 @@ const Checkout = () => {
                   {items.map((item) => (
                     <div key={item.id} className="flex items-center gap-4">
                       <img
-                        src={item.image_url || '/products/placeholder.svg'}
+                        src={resolveAssetUrl(item.image_url)}
                         alt={item.name}
                         className="w-16 h-16 rounded-xl object-cover bg-gray-100"
                       />

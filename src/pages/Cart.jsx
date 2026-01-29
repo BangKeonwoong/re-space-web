@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../contexts/CartContext'
+import { resolveAssetUrl } from '../lib/assets'
 
 const Cart = () => {
   const { items, totalPrice, updateQuantity, removeItem, clear } = useCart()
@@ -32,7 +33,7 @@ const Cart = () => {
             {items.map((item) => (
               <div key={item.id} className="bg-white border border-gray-200 rounded-2xl p-6 flex gap-6">
                 <img
-                  src={item.image_url || '/products/placeholder.svg'}
+                  src={resolveAssetUrl(item.image_url)}
                   alt={item.name}
                   className="w-28 h-28 rounded-xl object-cover bg-gray-100"
                 />

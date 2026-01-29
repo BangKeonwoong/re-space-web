@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { apiRequest } from '../lib/api'
+import { resolveAssetUrl } from '../lib/assets'
 
 const statusLabel = {
   pending: '결제 대기',
@@ -126,7 +127,7 @@ const OrderLookup = () => {
                     {order.items.map((item, index) => (
                       <div key={`${item.product?.name || 'item'}-${index}`} className="flex items-center gap-3">
                         <img
-                          src={item.product?.image_url || '/products/placeholder.svg'}
+                          src={resolveAssetUrl(item.product?.image_url)}
                           alt={item.product?.name || 'product'}
                           className="w-12 h-12 rounded-lg object-cover bg-gray-100"
                         />
