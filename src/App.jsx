@@ -10,6 +10,7 @@ import Sell from './pages/Sell';
 import Brands from './pages/Brands';
 import Quote from './pages/Quote';
 import Checkout from './pages/Checkout';
+import OrderLookup from './pages/OrderLookup';
 import AdminLayout from './layouts/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
 import ProductManager from './pages/admin/ProductManager';
@@ -40,6 +41,7 @@ function App() {
         <Route path="/brands" element={<Brands />} />
         <Route path="/quote" element={<Quote />} />
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/orders" element={<OrderLookup />} />
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>

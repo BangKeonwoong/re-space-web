@@ -34,6 +34,7 @@ const Navbar = () => {
                         { name: '신상품', path: '/new-arrivals' },
                         { name: '프리미엄 리퍼브', path: '/premium-refurb' },
                         { name: '구매하기', path: '/checkout' },
+                        { name: '주문조회', path: '/orders' },
                         { name: '판매하기', path: '/sell' },
                         { name: '브랜드', path: '/brands' }
                     ].map((item) => (
@@ -69,6 +70,7 @@ const Navbar = () => {
                         { name: '신상품', path: '/new-arrivals' },
                         { name: '프리미엄 리퍼브', path: '/premium-refurb' },
                         { name: '구매하기', path: '/checkout' },
+                        { name: '주문조회', path: '/orders' },
                         { name: '판매하기', path: '/sell' },
                         { name: '브랜드', path: '/brands' }
                     ].map((item) => (

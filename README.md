@@ -26,6 +26,7 @@ The server expects Supabase service role credentials in `.env` and exposes:
 - `GET /api/products/active`
 - `POST /api/quotes`
 - `POST /api/orders`
+- `POST /api/orders/lookup`
 - `POST /api/payments/portone/prepare`
 - `POST /api/payments/portone/complete`
 - `POST /api/webhooks/portone`

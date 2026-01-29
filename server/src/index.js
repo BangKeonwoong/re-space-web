@@ -78,6 +78,11 @@ const orderSchema = z.object({
   userId: z.string().uuid().optional(),
 })
 
+const orderLookupSchema = z.object({
+  orderNumber: z.string().min(5).max(40),
+  email: z.string().email(),
+})
+
 const portonePrepareSchema = z.object({
   orderId: z.string().uuid(),
   payMethod: z.string().optional(),
@@ -275,6 +280,33 @@ app.get('/api/products/active', async (req, res) => {
   }
 
   return res.json({ product })
+})
+
+app.post('/api/orders/lookup', async (req, res) => {
+  const parsed = orderLookupSchema.safeParse(req.body)
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'INVALID_INPUT', details: parsed.error.flatten() })
+  }
+  if (!supabase) {
+    return res.status(500).json({ error: 'SERVER_NOT_READY' })
+  }
+
+  const { orderNumber, email } = parsed.data
+
+  const { data: order, error } = await supabase
+    .from('orders')
+    .select(
+      'id, order_number, status, total_price_krw, currency, created_at, customer_name, customer_email, product:products(name), payments:payments(status, provider, amount, created_at)',
+    )
+    .eq('order_number', orderNumber)
+    .eq('customer_email', email)
+    .single()
+
+  if (error || !order) {
+    return res.status(404).json({ error: 'ORDER_NOT_FOUND' })
+  }
+
+  return res.json({ order })
 })
 
 app.post('/api/quotes', async (req, res) => {

@@ -40,8 +40,8 @@ const Footer = () => {
                         <div>
                             <h4 className="font-bold mb-4 font-heading text-lg">고객 지원</h4>
                             <ul className="space-y-3 text-gray-500">
-                                <li><a href="#" className="hover:text-black hover:underline transition-all">자주 묻는 질문</a></li>
-                                <li><a href="#" className="hover:text-black hover:underline transition-all">문의하기</a></li>
+                                <li><Link to="/orders" className="hover:text-black hover:underline transition-all">주문 조회</Link></li>
+                                <li><Link to="/quote" className="hover:text-black hover:underline transition-all">문의하기</Link></li>
                                 <li><a href="#" className="hover:text-black hover:underline transition-all">반품/환불</a></li>
                             </ul>
                         </div>

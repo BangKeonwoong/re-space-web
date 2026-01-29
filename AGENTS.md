@@ -37,7 +37,7 @@
 ### Phase 3 - Frontend
 - [x] 상품 상세 → 주문 → 결제 진입
 - [x] 견적 문의 폼 연동
-- [ ] 회원/비회원 주문 조회
+- [x] 회원/비회원 주문 조회
 
 ### Phase 4 - Ops
 - [ ] 백엔드 배포 (Render/Railway/Vercel 중 선택)
