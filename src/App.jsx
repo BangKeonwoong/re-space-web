@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { MessageSquare } from 'lucide-react';
@@ -34,9 +34,12 @@ const AgentButton = () => {
 }
 
 function App() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
   return (
     <div className="min-h-screen bg-white font-sans text-gray-900 selection:bg-lime-200">
-      <Navbar />
+      {!isAdminRoute && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/new-arrivals" element={<NewArrivals />} />
@@ -58,8 +61,8 @@ function App() {
           <Route path="quotes" element={<QuoteManager />} />
         </Route>
       </Routes>
-      <Footer />
-      <AgentButton />
+      {!isAdminRoute && <Footer />}
+      {!isAdminRoute && <AgentButton />}
     </div>
   )
 }
