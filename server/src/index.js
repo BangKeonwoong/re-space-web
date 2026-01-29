@@ -286,6 +286,35 @@ app.get('/api/health', (req, res) => {
   res.json({ ok: true, time: new Date().toISOString() })
 })
 
+app.get('/api/admin/verify', async (req, res) => {
+  if (!supabase) {
+    return res.status(500).json({ error: 'SERVER_NOT_READY' })
+  }
+
+  const authHeader = req.headers.authorization || ''
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
+  if (!token) {
+    return res.status(401).json({ error: 'MISSING_TOKEN' })
+  }
+
+  const { data: userData, error: userError } = await supabase.auth.getUser(token)
+  if (userError || !userData?.user) {
+    return res.status(401).json({ error: 'INVALID_TOKEN' })
+  }
+
+  const { data: adminRow, error: adminError } = await supabase
+    .from('admin_users')
+    .select('user_id, role')
+    .eq('user_id', userData.user.id)
+    .maybeSingle()
+
+  if (adminError) {
+    return res.status(500).json({ error: 'ADMIN_CHECK_FAILED', details: adminError.message })
+  }
+
+  return res.json({ isAdmin: Boolean(adminRow), role: adminRow?.role || null })
+})
+
 app.get('/api/products/active', async (req, res) => {
   if (!supabase) {
     return res.status(500).json({ error: 'SERVER_NOT_READY' })

@@ -1,12 +1,50 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient'
+import { apiRequest } from '../lib/api'
 
 const AdminAuthContext = createContext(null)
 
-const getAdminStatus = async (user) => {
+const formatErrorMessage = (error) => {
+  if (!error) return null
+  if (typeof error === 'string') return error
+  const message = error.message || error.error_description || error.details
+  return message || '알 수 없는 오류'
+}
+
+const withTimeout = (promise, ms, label) =>
+  new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`${label} 시간 초과`))
+    }, ms)
+    promise
+      .then((result) => {
+        clearTimeout(timer)
+        resolve(result)
+      })
+      .catch((error) => {
+        clearTimeout(timer)
+        reject(error)
+      })
+  })
+
+const getAdminStatus = async (user, accessToken) => {
   if (!supabase || !user) return { isAdmin: false, error: null }
 
   try {
+    if (accessToken) {
+      const fallback = await withTimeout(
+        apiRequest('/api/admin/verify', {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }),
+        4000,
+        '관리자 검증',
+      )
+      return { isAdmin: Boolean(fallback?.isAdmin), error: null }
+    }
+
     const { data, error } = await supabase
       .from('admin_users')
       .select('user_id')
@@ -39,8 +77,7 @@ export const AdminAuthProvider = ({ children }) => {
       }
     }
 
-    supabase.auth
-      .getSession()
+    withTimeout(supabase.auth.getSession(), 4000, '세션 확인')
       .then(async ({ data, error }) => {
         if (!mounted) return
         if (error) {
@@ -49,15 +86,17 @@ export const AdminAuthProvider = ({ children }) => {
           return
         }
         setSession(data.session)
-        const adminState = await getAdminStatus(data.session?.user)
+        const adminState = await getAdminStatus(data.session?.user, data.session?.access_token)
         if (!mounted) return
         setIsAdmin(adminState.isAdmin)
-        setError(adminState.error ? '관리자 권한 확인에 실패했습니다.' : null)
+        setError(
+          adminState.error ? `관리자 권한 확인에 실패했습니다. ${formatErrorMessage(adminState.error)}` : null,
+        )
         setLoading(false)
       })
       .catch((error) => {
         if (!mounted) return
-        setError(`세션 확인 실패: ${error?.message || '알 수 없는 오류'}`)
+        setError(`세션 확인 실패: ${formatErrorMessage(error)}`)
         setLoading(false)
       })
 
@@ -66,14 +105,16 @@ export const AdminAuthProvider = ({ children }) => {
       setLoading(true)
       setSession(nextSession)
       try {
-        const adminState = await getAdminStatus(nextSession?.user)
+        const adminState = await getAdminStatus(nextSession?.user, nextSession?.access_token)
         if (!mounted) return
         setIsAdmin(adminState.isAdmin)
-        setError(adminState.error ? '관리자 권한 확인에 실패했습니다.' : null)
+        setError(
+          adminState.error ? `관리자 권한 확인에 실패했습니다. ${formatErrorMessage(adminState.error)}` : null,
+        )
         setLoading(false)
       } catch (error) {
         if (!mounted) return
-        setError(`관리자 권한 확인 실패: ${error?.message || '알 수 없는 오류'}`)
+        setError(`관리자 권한 확인 실패: ${formatErrorMessage(error)}`)
         setLoading(false)
       }
     })
@@ -124,7 +165,7 @@ export const AdminAuthProvider = ({ children }) => {
       return { ok: false }
     }
 
-    const adminState = await getAdminStatus(data.user)
+    const adminState = await getAdminStatus(data.user, data.session?.access_token)
     if (!adminState.isAdmin) {
       await supabase.auth.signOut()
       setSession(null)
