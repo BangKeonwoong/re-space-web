@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { API_BASE_URL, apiRequest } from '../../lib/api'
 import { useAdminAuth } from '../../contexts/AdminAuthContext'
+import { adminRequest, uploadAdminFile } from '../../lib/adminApi'
 import ProductFormModal from './components/ProductFormModal'
 import ProductListView from './components/ProductListView'
 import ProductPreviewModal from './components/ProductPreviewModal'
@@ -49,11 +49,7 @@ const ProductManager = () => {
     let mounted = true
     setStatus({ loading: true, error: null })
 
-    apiRequest('/api/admin/products', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
+    adminRequest('/api/admin/products', accessToken)
       .then((data) => {
         if (mounted) setProducts(data.products || [])
       })
@@ -96,29 +92,11 @@ const ProductManager = () => {
     setUploadError(null)
 
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      const response = await fetch(`${API_BASE_URL}/api/admin/uploads`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: formData,
-      })
-
-      const text = await response.text()
-      const data = text ? JSON.parse(text) : null
-
-      if (!response.ok) {
-        const message = data?.details || data?.error || 'UPLOAD_FAILED'
-        throw new Error(message)
-      }
-
-      if (data?.publicUrl) {
-        setForm((prev) => ({ ...prev, image_url: data.publicUrl }))
-      } else {
+      const data = await uploadAdminFile({ accessToken, file })
+      if (!data?.publicUrl) {
         throw new Error('UPLOAD_FAILED')
       }
+      setForm((prev) => ({ ...prev, image_url: data.publicUrl }))
     } catch (error) {
       const message = error?.message || '이미지 업로드에 실패했습니다.'
       if (message.toLowerCase().includes('bucket not found')) {
@@ -157,19 +135,13 @@ const ProductManager = () => {
       }
 
       if (isEditing) {
-        await apiRequest(`/api/admin/products/${form.id}`, {
+        await adminRequest(`/api/admin/products/${form.id}`, accessToken, {
           method: 'PATCH',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
           body: JSON.stringify(payload),
         })
       } else {
-        await apiRequest('/api/admin/products', {
+        await adminRequest('/api/admin/products', accessToken, {
           method: 'POST',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
           body: JSON.stringify(payload),
         })
       }
