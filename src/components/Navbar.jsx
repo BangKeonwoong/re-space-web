@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Search, ShoppingBag, Menu, X, User } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
+    const location = useLocation();
     const { totalCount } = useCart();
     const { user } = useAuth();
 
@@ -15,6 +16,10 @@ const Navbar = () => {
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    useEffect(() => {
+        setIsOpen(false);
+    }, [location.pathname]);
 
     return (
         <nav
@@ -85,7 +90,14 @@ const Navbar = () => {
                         { name: '판매하기', path: '/sell' },
                         { name: '브랜드', path: '/brands' }
                     ].map((item) => (
-                        <Link key={item.name} to={item.path} className="text-lg font-bold font-heading">{item.name}</Link>
+                        <Link
+                            key={item.name}
+                            to={item.path}
+                            onClick={() => setIsOpen(false)}
+                            className="text-lg font-bold font-heading"
+                        >
+                            {item.name}
+                        </Link>
                     ))}
                 </div>
             )}
