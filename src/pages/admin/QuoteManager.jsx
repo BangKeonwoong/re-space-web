@@ -15,7 +15,7 @@ const QuoteManager = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold font-heading">견적 관리</h1>
           <p className="text-sm text-gray-500 mt-1">신규 문의를 확인하고 상태를 업데이트하세요.</p>
@@ -35,65 +35,67 @@ const QuoteManager = () => {
       )}
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-gray-50 border-b border-gray-100">
-            <tr>
-              <th className="p-4 font-medium text-gray-500">고객</th>
-              <th className="p-4 font-medium text-gray-500">연락처</th>
-              <th className="p-4 font-medium text-gray-500">수량</th>
-              <th className="p-4 font-medium text-gray-500">메모</th>
-              <th className="p-4 font-medium text-gray-500">상태</th>
-              <th className="p-4 font-medium text-gray-500">접수일</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {status.loading && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm min-w-[800px]">
+            <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                <td colSpan="6" className="p-6 text-center text-gray-400">
-                  견적 정보를 불러오는 중...
-                </td>
+                <th className="p-4 font-medium text-gray-500">고객</th>
+                <th className="p-4 font-medium text-gray-500">연락처</th>
+                <th className="p-4 font-medium text-gray-500">수량</th>
+                <th className="p-4 font-medium text-gray-500">메모</th>
+                <th className="p-4 font-medium text-gray-500">상태</th>
+                <th className="p-4 font-medium text-gray-500">접수일</th>
               </tr>
-            )}
-            {!status.loading && quotes.length === 0 && (
-              <tr>
-                <td colSpan="6" className="p-6 text-center text-gray-400">
-                  등록된 견적 문의가 없습니다.
-                </td>
-              </tr>
-            )}
-            {!status.loading &&
-              quotes.map((quote) => (
-                <tr key={quote.id}>
-                  <td className="p-4">
-                    <p className="font-medium">{quote.customer_name}</p>
-                    <p className="text-xs text-gray-400">{quote.customer_email}</p>
-                  </td>
-                  <td className="p-4 text-gray-500">{quote.customer_phone || '-'}</td>
-                  <td className="p-4">{quote.quantity}</td>
-                  <td className="p-4 text-gray-500 max-w-xs">
-                    <p className="line-clamp-2">{quote.message || '-'}</p>
-                  </td>
-                  <td className="p-4">
-                    <select
-                      value={quote.status}
-                      onChange={(event) => updateStatus(quote.id, event.target.value)}
-                      disabled={savingId === quote.id}
-                      className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
-                    >
-                      {statusOptions.map((option) => (
-                        <option key={option} value={option}>
-                          {statusLabels[option] || option}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="p-4 text-gray-500">
-                    {new Date(quote.created_at).toLocaleDateString()}
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {status.loading && (
+                <tr>
+                  <td colSpan="6" className="p-6 text-center text-gray-400">
+                    견적 정보를 불러오는 중...
                   </td>
                 </tr>
-              ))}
-          </tbody>
-        </table>
+              )}
+              {!status.loading && quotes.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="p-6 text-center text-gray-400">
+                    등록된 견적 문의가 없습니다.
+                  </td>
+                </tr>
+              )}
+              {!status.loading &&
+                quotes.map((quote) => (
+                  <tr key={quote.id}>
+                    <td className="p-4">
+                      <p className="font-medium">{quote.customer_name}</p>
+                      <p className="text-xs text-gray-400">{quote.customer_email}</p>
+                    </td>
+                    <td className="p-4 text-gray-500">{quote.customer_phone || '-'}</td>
+                    <td className="p-4">{quote.quantity}</td>
+                    <td className="p-4 text-gray-500 max-w-xs">
+                      <p className="line-clamp-2">{quote.message || '-'}</p>
+                    </td>
+                    <td className="p-4">
+                      <select
+                        value={quote.status}
+                        onChange={(event) => updateStatus(quote.id, event.target.value)}
+                        disabled={savingId === quote.id}
+                        className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                      >
+                        {statusOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {statusLabels[option] || option}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="p-4 text-gray-500">
+                      {new Date(quote.created_at).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )

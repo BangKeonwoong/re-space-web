@@ -30,7 +30,7 @@ const ProductDetail = () => {
 
   if (status.loading) {
     return (
-      <div className="pt-32 pb-20 px-6 max-w-6xl mx-auto">
+      <div className="pt-24 md:pt-32 pb-20 px-6 max-w-6xl mx-auto">
         <div className="h-72 bg-gray-100 rounded-3xl animate-pulse"></div>
       </div>
     )
@@ -38,7 +38,7 @@ const ProductDetail = () => {
 
   if (status.error || !product) {
     return (
-      <div className="pt-32 pb-20 px-6 max-w-6xl mx-auto">
+      <div className="pt-24 md:pt-32 pb-20 px-6 max-w-6xl mx-auto">
         <div className="bg-red-50 border border-red-200 text-red-600 rounded-2xl p-6">
           {status.error || '상품을 찾을 수 없습니다.'}
         </div>
@@ -49,7 +49,7 @@ const ProductDetail = () => {
   const checkoutLink = `/checkout?productId=${encodeURIComponent(product.id)}`
 
   return (
-    <div className="pt-32 pb-20 px-6 max-w-6xl mx-auto">
+    <div className="pt-24 md:pt-32 pb-20 px-6 max-w-6xl mx-auto">
       <div className="grid md:grid-cols-2 gap-10">
         <div className="bg-gray-50 rounded-3xl p-8">
           <img
@@ -61,7 +61,7 @@ const ProductDetail = () => {
         <div className="flex flex-col gap-6">
           <div>
             <p className="text-xs uppercase tracking-widest text-gray-400">{product.category}</p>
-            <h1 className="text-4xl font-bold mt-2 font-heading">{product.name}</h1>
+            <h1 className="text-3xl md:text-4xl font-bold mt-2 font-heading">{product.name}</h1>
             <p className="text-gray-500 mt-4">{product.description}</p>
           </div>
           <div className="flex items-center gap-4">

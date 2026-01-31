@@ -25,7 +25,7 @@ const Login = () => {
   }
 
   return (
-    <div className="pt-32 pb-20 px-6 max-w-md mx-auto">
+    <div className="pt-24 md:pt-32 pb-20 px-6 max-w-md mx-auto">
       <div className="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm">
         <h1 className="text-3xl font-bold font-heading mb-3">로그인</h1>
         <p className="text-sm text-gray-500 mb-6">회원 계정으로 로그인하세요.</p>

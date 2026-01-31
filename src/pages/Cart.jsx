@@ -7,8 +7,8 @@ const Cart = () => {
   const { items, totalPrice, updateQuantity, removeItem, clear } = useCart()
 
   return (
-    <div className="pt-32 pb-20 px-6 max-w-6xl mx-auto">
-      <div className="flex items-end justify-between mb-8">
+    <div className="pt-24 md:pt-32 pb-20 px-6 max-w-6xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
         <div>
           <h1 className="text-4xl font-bold font-heading">장바구니</h1>
           <p className="text-gray-500 mt-2">선택한 상품을 확인하고 결제하세요.</p>
@@ -16,7 +16,7 @@ const Cart = () => {
         {items.length > 0 && (
           <button
             onClick={clear}
-            className="text-sm text-gray-500 hover:text-black transition-colors"
+            className="self-start sm:self-auto text-sm text-gray-500 hover:text-black transition-colors px-3 py-2 rounded-lg hover:bg-gray-100"
           >
             비우기
           </button>
@@ -31,11 +31,11 @@ const Cart = () => {
         <div className="grid lg:grid-cols-[2fr_1fr] gap-10">
           <div className="space-y-6">
             {items.map((item) => (
-              <div key={item.id} className="bg-white border border-gray-200 rounded-2xl p-6 flex gap-6">
+              <div key={item.id} className="bg-white border border-gray-200 rounded-2xl p-6 flex flex-col sm:flex-row gap-6">
                 <img
                   src={resolveAssetUrl(item.image_url)}
                   alt={item.name}
-                  className="w-28 h-28 rounded-xl object-cover bg-gray-100"
+                  className="w-full h-40 sm:w-28 sm:h-28 rounded-xl object-cover bg-gray-100"
                 />
                 <div className="flex-1">
                   <div className="flex items-start justify-between gap-4">
@@ -50,7 +50,7 @@ const Cart = () => {
                       삭제
                     </button>
                   </div>
-                  <div className="mt-4 flex items-center gap-3">
+                  <div className="mt-4 flex flex-wrap items-center gap-3">
                     <input
                       type="number"
                       min="1"

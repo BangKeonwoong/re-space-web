@@ -8,7 +8,7 @@ const Account = () => {
 
   if (!user) {
     return (
-      <div className="pt-32 pb-20 px-6 max-w-xl mx-auto">
+      <div className="pt-24 md:pt-32 pb-20 px-6 max-w-xl mx-auto">
         <div className="bg-gray-50 border border-gray-200 rounded-3xl p-8 text-center text-gray-500">
           로그인 후 이용해주세요.
         </div>
@@ -22,7 +22,7 @@ const Account = () => {
   }
 
   return (
-    <div className="pt-32 pb-20 px-6 max-w-3xl mx-auto">
+    <div className="pt-24 md:pt-32 pb-20 px-6 max-w-3xl mx-auto">
       <div className="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm">
         <h1 className="text-3xl font-bold font-heading mb-4">내 계정</h1>
         <div className="space-y-2 text-gray-600">

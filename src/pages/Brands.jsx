@@ -2,7 +2,7 @@ import React from 'react';
 
 const Brands = () => {
     return (
-        <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
+        <div className="pt-24 md:pt-32 pb-20 px-6 max-w-7xl mx-auto">
             <h1 className="text-4xl font-bold mb-12 font-heading text-center">Brands We Love</h1>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

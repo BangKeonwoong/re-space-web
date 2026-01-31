@@ -162,7 +162,7 @@ const Checkout = () => {
   }
 
   return (
-    <div className="pt-32 pb-20 px-6 max-w-6xl mx-auto">
+    <div className="pt-24 md:pt-32 pb-20 px-6 max-w-6xl mx-auto">
       <div className="flex flex-col md:flex-row gap-10">
         <div className="flex-1">
           <h1 className="text-4xl font-bold mb-4 font-heading">구매하기</h1>
@@ -175,7 +175,7 @@ const Checkout = () => {
           <div className="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm">
             {hasCart ? (
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
                     <p className="text-xs uppercase tracking-widest text-gray-400">Cart Items</p>
                     <h2 className="text-2xl font-bold mt-2">장바구니 상품 {items.length}개</h2>
@@ -204,7 +204,7 @@ const Checkout = () => {
               </div>
             ) : (
               <>
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                   <div>
                     <p className="text-xs uppercase tracking-widest text-gray-400">Product</p>
                     <h2 className="text-2xl font-bold mt-2">

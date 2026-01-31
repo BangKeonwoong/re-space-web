@@ -49,10 +49,10 @@ const ProductCatalog = ({
   }, [category, searchQuery])
 
   return (
-    <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
+    <div className="pt-24 md:pt-32 pb-20 px-6 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
         <div>
-          <h1 className="text-4xl font-bold mb-3 font-heading">{title}</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-3 font-heading">{title}</h1>
           {description && <p className="text-gray-500 max-w-2xl">{description}</p>}
         </div>
         {!hideCategories && (
@@ -61,11 +61,10 @@ const ProductCatalog = ({
               <button
                 key={item.key}
                 onClick={() => setCategory(item.key)}
-                className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${
-                  category === item.key
+                className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${category === item.key
                     ? 'bg-black text-white border-black'
                     : 'bg-white border-gray-200 text-gray-600 hover:border-black hover:text-black'
-                }`}
+                  }`}
               >
                 {item.label}
               </button>
@@ -75,7 +74,7 @@ const ProductCatalog = ({
       </div>
 
       {loading && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {[1, 2, 3].map((item) => (
             <div key={item} className="bg-gray-50 rounded-2xl p-6 animate-pulse">
               <div className="h-40 bg-gray-200 rounded-xl mb-4"></div>
@@ -99,7 +98,7 @@ const ProductCatalog = ({
               {categoryLabel} 상품 {products.length}개
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {products.map((product) => (
               <div key={product.id} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
                 <Link to={`/products/${product.id}`} className="block mb-5">

@@ -49,7 +49,7 @@ const OrderLookup = () => {
   }
 
   return (
-    <div className="pt-32 pb-20 px-6 max-w-5xl mx-auto">
+    <div className="pt-24 md:pt-32 pb-20 px-6 max-w-5xl mx-auto">
       <h1 className="text-4xl font-bold mb-4 font-heading">주문 조회</h1>
       <p className="text-gray-500 mb-10">
         주문번호와 주문 시 입력한 이메일로 주문 상태를 확인할 수 있습니다.

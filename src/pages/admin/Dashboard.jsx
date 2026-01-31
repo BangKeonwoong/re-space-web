@@ -69,7 +69,7 @@ const Dashboard = () => {
             {recentOrders.map((order) => (
               <div
                 key={order.order_number}
-                className="flex items-center justify-between border border-gray-100 rounded-xl px-4 py-3"
+                className="flex flex-col sm:flex-row sm:items-center justify-between border border-gray-100 rounded-xl px-4 py-3 gap-2"
               >
                 <div>
                   <p className="font-semibold">{order.order_number}</p>
@@ -77,7 +77,7 @@ const Dashboard = () => {
                     {new Date(order.created_at).toLocaleString()}
                   </p>
                 </div>
-                <div className="text-right">
+                <div className="text-left sm:text-right">
                   <p className="font-semibold">₩{order.total_price_krw?.toLocaleString()}</p>
                   <p className="text-xs text-gray-400">{order.status}</p>
                 </div>

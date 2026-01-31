@@ -39,14 +39,14 @@ const CustomerManager = () => {
           <h1 className="text-2xl font-bold font-heading">회원 관리</h1>
           <p className="text-sm text-gray-500 mt-1">회원 계정을 조회하고 관리하세요.</p>
         </div>
-        <form onSubmit={handleSubmit} className="flex gap-3">
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="이메일 검색"
-            className="px-4 py-2 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
+            className="w-full sm:w-64 px-4 py-2 rounded-xl border border-gray-200 focus:border-black focus:outline-none"
           />
-          <button className="px-4 py-2 bg-black text-white rounded-xl font-semibold">검색</button>
+          <button className="w-full sm:w-auto px-4 py-2 bg-black text-white rounded-xl font-semibold">검색</button>
         </form>
       </div>
 
@@ -57,53 +57,54 @@ const CustomerManager = () => {
       )}
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-gray-50 border-b border-gray-100">
-            <tr>
-              <th className="p-4 font-medium text-gray-500">이메일</th>
-              <th className="p-4 font-medium text-gray-500">가입일</th>
-              <th className="p-4 font-medium text-gray-500">최근 로그인</th>
-              <th className="p-4 font-medium text-gray-500">이메일 인증</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {status.loading && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm min-w-[700px]">
+            <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
-                <td colSpan="4" className="p-6 text-center text-gray-400">
-                  회원 정보를 불러오는 중...
-                </td>
+                <th className="p-4 font-medium text-gray-500">이메일</th>
+                <th className="p-4 font-medium text-gray-500">가입일</th>
+                <th className="p-4 font-medium text-gray-500">최근 로그인</th>
+                <th className="p-4 font-medium text-gray-500">이메일 인증</th>
               </tr>
-            )}
-            {!status.loading && users.length === 0 && (
-              <tr>
-                <td colSpan="4" className="p-6 text-center text-gray-400">
-                  등록된 회원이 없습니다.
-                </td>
-              </tr>
-            )}
-            {!status.loading &&
-              users.map((user) => (
-                <tr key={user.id}>
-                  <td className="p-4 font-medium">{user.email}</td>
-                  <td className="p-4 text-gray-500">
-                    {user.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}
-                  </td>
-                  <td className="p-4 text-gray-500">
-                    {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : '-'}
-                  </td>
-                  <td className="p-4">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        user.email_confirmed_at ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-                      }`}
-                    >
-                      {user.email_confirmed_at ? '확인됨' : '미확인'}
-                    </span>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {status.loading && (
+                <tr>
+                  <td colSpan="4" className="p-6 text-center text-gray-400">
+                    회원 정보를 불러오는 중...
                   </td>
                 </tr>
-              ))}
-          </tbody>
-        </table>
+              )}
+              {!status.loading && users.length === 0 && (
+                <tr>
+                  <td colSpan="4" className="p-6 text-center text-gray-400">
+                    등록된 회원이 없습니다.
+                  </td>
+                </tr>
+              )}
+              {!status.loading &&
+                users.map((user) => (
+                  <tr key={user.id}>
+                    <td className="p-4 font-medium">{user.email}</td>
+                    <td className="p-4 text-gray-500">
+                      {user.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}
+                    </td>
+                    <td className="p-4 text-gray-500">
+                      {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : '-'}
+                    </td>
+                    <td className="p-4">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-semibold ${user.email_confirmed_at ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                          }`}
+                      >
+                        {user.email_confirmed_at ? '확인됨' : '미확인'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )

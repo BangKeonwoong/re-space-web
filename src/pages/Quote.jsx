@@ -47,7 +47,7 @@ const Quote = () => {
     };
 
     return (
-        <div className="pt-32 pb-20 px-6 max-w-4xl mx-auto">
+        <div className="pt-24 md:pt-32 pb-20 px-6 max-w-4xl mx-auto">
             <h1 className="text-4xl font-bold mb-8 font-heading text-center">견적 문의</h1>
 
             <div className="grid md:grid-cols-2 gap-12">
